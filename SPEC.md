@@ -228,7 +228,13 @@ Ilme suunnitellaan artefaktina ennen toteutusta. Artefaktissa on 2–3 tyylivaih
 - neljä oletusväriä sarjoille
 - ehdotuksia voittoanimaatioksi ja jonon valmistumisen animaatioksi
 
-**Päätetty:** voittoanimaatio vaihtelee. Jokaisen voiton jälkeen näytetään satunnaisesti
+**Päätetty:**
+- Oletustyyli on **Yöhehku**: syvä yötaivas, jolla on hento hämähäkinverkko ja hohtavat
+  pisarat. Kortit hehkuvat sarjan värissä, ja numerot ovat Lexend-kirjasimella. Vaaleassa
+  teemassa tausta on vaalea laventelinsumu, ja hehku on hillitympi.
+- Yöhehkun oletusvärit sarjoille ovat tummassa teemassa `#6af0c6`, `#7cb8ff`, `#ffb86a`
+  ja `#e78cff`, ja vaaleassa teemassa `#0e9b77`, `#2d6bd4`, `#cf7b19` ja `#a548c6`.
+- Voittoanimaatio vaihtelee. Jokaisen voiton jälkeen näytetään satunnaisesti
 yksi vaihtoehdoista: verkko kutoutuu tai kastepisarat syttyvät. Tyyliluonnos on
 tiedostossa `design/tyyliluonnos.html`.
 
