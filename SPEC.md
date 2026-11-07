@@ -246,3 +246,13 @@ tiedostossa `design/tyyliluonnos.html`.
 - Automaattinen taustanpoisto tekoälyllä
 - Englannin kieli
 - Värinä
+
+## 13. Toteutuksessa tehdyt tarkennukset
+
+- Oletusvaikeus on 1 sarja. Vaikeustason voi vaihtaa Uusi peli -ikkunasta ja asetuksista.
+- Sarjan värin paikka (numero, kehys tai tausta) on asetus, ja oletuksena väri näkyy numerossa.
+  Muut tyylit (Aamukaste ja Muste) voi valita asetuksista.
+- Uusi kuva asetetaan setin ensimmäiselle vapaalle numerolle. Numeron kuvan valinnassa on
+  lisäksi pikavalinta "Käytä kaikilla numeroilla".
+- Pystyasennossa kortit ovat pieniä, ja tämä on hyväksytty ratkaisu.
+- Androidin takaisin-painike sulkee avoinna olevan näkymän.
