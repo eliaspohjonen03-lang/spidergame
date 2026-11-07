@@ -44,7 +44,7 @@ export function WinOverlay({ game, set, urls, onNew, onStats }: Props) {
         <h2>Voitit!</h2>
         <div class="kings">
           {game.done.map((run, i) => (
-            <MiniCard key={i} rank={13} suit={run.suit} w={26} set={set} urls={urls} />
+            <MiniCard key={i} rank={1} suit={run.suit} w={26} set={set} urls={urls} />
           ))}
         </div>
         <div class="stats">

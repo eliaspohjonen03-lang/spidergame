@@ -112,7 +112,7 @@ export function cardPositions(g: GameState, L: Layout): Map<number, Pos> {
     const cy = Math.floor(r / L.found.cols);
     const x = L.found.x + cx * (L.found.w + L.found.gap);
     const y = L.found.y + cy * (L.found.w * ASPECT + L.found.gap);
-    run.ids.forEach((id, i) => pos.set(id, { x, y, s: fk, z: 32 - i, flat: i !== 0 }));
+    run.ids.forEach((id, i) => pos.set(id, { x, y, s: fk, z: 20 + i, flat: i !== 12 }));
   });
   return pos;
 }
