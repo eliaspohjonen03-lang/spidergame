@@ -1,150 +1,237 @@
-# Spider – pelin määrittely (luonnos v0.1)
+# Custom Spider – määrittely
 
-> Tila: **luonnos**. Avoimet kysymykset on merkitty ❓ ja koottu loppuun.
+> Versio 0.2 · Tila: haastattelu valmis, graafinen ilme suunnittelematta (ks. kohta 11)
 
 ## 1. Tiivistelmä
 
-Mobiilissa pelattava Spider-pasianssi. Pelikorttien sijaan pelataan omilla
-"kuvakorteilla": jokaisen kortin yläreunassa on numero 1–13, ja keskellä on kuva.
-Oletuskuva on hämähäkki. Asetuksista pelaaja voi valita kuvat puhelimen galleriasta
-ja päättää, mikä kuva kuuluu millekin numerolle.
+**Custom Spider** on Spider-pasianssi puhelimeen. Kortit lajitellaan sarjoiksi 13 → 1.
+Peli on tavallinen pasianssi, mutta pelikortteja ei käytetä: jokaisen kortin
+vasemmassa yläkulmassa on numero 1–13 ja kortissa on kuva. Oletuskuva on hämähäkki.
+Pelaaja voi tehdä omia kuvasettejä puhelimen galleriasta, muokata kuvia (rajaus,
+zoomaus, kierto, taustan pyyhkiminen) ja valita, mikä kuva näkyy millä numerolla.
+Maiden tilalla ovat värisävyt.
 
-Ulkoasu **ei saa** muistuttaa kasinoa tai pelikortteja, mutta sen pitää olla
-graafisesti kaunis.
+- Ulkoasu on kaunis eikä tuo mieleen kasinoa tai pelikortteja.
+- Peli on asennettava verkkosovellus (PWA). Sitä jaetaan perheelle linkillä.
+  Jokaisen pelaajan kuvat jäävät vain hänen omaan puhelimeensa.
+- Peli on suomenkielinen.
+- Ensisijainen alusta on Android. Pelin pitää toimia myös iPhonella.
 
 ## 2. Säännöt
 
-Perustana ovat Spider-pasianssin tavalliset säännöt:
-
-- Pakassa on 104 korttia: 8 täyttä sarjaa, joissa kussakin numerot 1–13.
-- Pöydällä on 10 saraketta. Alussa jaetaan 54 korttia: neljään ensimmäiseen
-  sarakkeeseen 6 korttia ja muihin 5. Vain sarakkeen alin kortti on kuvapuoli ylöspäin.
-- Loput 50 korttia jäävät jakopakkaan. Jokainen jako antaa yhden kortin
-  jokaiseen sarakkeeseen, joten jakoja on yhteensä 5.
-- Kortin voi siirtää minkä tahansa kortin päälle, jonka numero on yhtä suurempi
-  (esim. 7 → 8), sarjasta riippumatta.
+- Pakassa on 104 korttia: 8 täyttä jonoa, joissa kussakin numerot 1–13.
+- Pöydällä on 10 saraketta. Alussa jaetaan 54 korttia: sarakkeisiin 1–4 kuusi korttia
+  ja sarakkeisiin 5–10 viisi korttia. Vain sarakkeen alin kortti on kuvapuoli ylöspäin.
+- Jakopakkaan jää 50 korttia. Jokainen jako antaa yhden kortin jokaiseen sarakkeeseen,
+  joten jakoja on 5.
+- **Jakaminen ei onnistu, jos jokin sarake on tyhjä.** Peli kertoo syyn lyhyellä ilmoituksella.
+- Kortin voi siirtää kortin päälle, jonka numero on yhtä suurempi, sarjasta riippumatta.
 - Useamman kortin pinon voi siirtää kerralla vain, jos se on laskeva ja **samaa sarjaa**.
 - Tyhjään sarakkeeseen voi siirtää minkä tahansa kortin tai siirrettävän pinon.
-- Kun sarakkeeseen syntyy täysi saman sarjan jono 13 → 1, se poistuu pöydältä automaattisesti.
-- Peli voitetaan, kun kaikki 8 jonoa on kerätty.
-- ❓ Estetäänkö jako, jos jokin sarake on tyhjä (perinteinen sääntö)?
+- Kun sarakkeen alin kortti jää kuvapuoli alaspäin, se käännetään automaattisesti.
+- Kun saman sarjan jono 13 → 1 on valmis, se poistuu pöydältä automaattisesti
+  ja siirtyy valmiiden jonojen alueelle.
+- Peli voitetaan, kun kaikki 8 jonoa on kerätty. Automaattista loppuun pelaamista ei ole.
+- Jaot ovat satunnaisia, kuten perinteisesti. Jaon siemenluku tallennetaan, jotta saman jaon
+  voi pelata uudelleen.
 
-### 2.1 Sarjat (maiden korvike)
+### 2.1 Vaikeustasot eli sarjojen määrä
 
-Perinteisessä Spiderissä vaikeustaso tulee maiden määrästä: 1, 2 tai 4 maata.
-Tässä pelissä maiden tilalla käytetään **värisävyjä**, esimerkiksi kortin kehyksen
-tai taustan väriä. Hertat, padat ja muut maat eivät näy missään.
+Pelaaja valitsee 1, 2, 3 tai 4 sarjaa. Sarjat erotetaan toisistaan värisävyllä.
+Pakassa on aina 8 jonoa, ja ne jaetaan sarjoille näin:
 
-| Vaikeus | Sarjoja | Esimerkki |
-|---|---|---|
-| Helppo | 1 | kaikki kortit samaa sävyä |
-| Keskitaso | 2 | esim. sammal ja meri |
-| Vaikea | 4 | esim. sammal, meri, auringonlasku ja laventeli |
+| Sarjoja | Jonoja sarjaa kohden |
+|---|---|
+| 1 | 8 |
+| 2 | 4 + 4 |
+| 3 | 3 + 3 + 2 |
+| 4 | 2 + 2 + 2 + 2 |
 
-- ❓ Käytetäänkö värisävyjä sarjoina, vai riittääkö pelkkä 1-sarjainen peli?
-- ❓ Onko kuva sama kaikissa sarjoissa samalle numerolle (13 kuvaa), vai saako
-  jokainen sarja omat kuvansa (enintään 52 kuvaa)? Ehdotan aloitukseksi 13 kuvaa.
+### 2.2 Pisteet, siirrot ja aika (Windowsin klassisen Spiderin tapaan)
 
-## 3. Kortit ja kuvat
+- Peli alkaa 500 pisteestä.
+- Jokainen siirto tai jako vähentää yhden pisteen.
+- Jokainen valmis jono tuo 100 pistettä.
+- Kumoa-nappia saa käyttää rajattomasti. Jokainen kumoaminen lasketaan siirroksi ja
+  vähentää pisteen. Myös jaon ja jonon valmistumisen voi kumota. Jonon valmistuminen
+  kumoutuu yhdessä siirron kanssa, joka sen aiheutti.
+- Vihjeen käyttö ei maksa pisteitä.
+- Ajastin käy vain, kun peli on näkyvissä. Se pysähtyy, kun sovellus menee taustalle
+  tai näyttö sammuu.
+- Pisteet, aika ja siirtojen määrä näkyvät pelin aikana yläpalkissa.
 
-### 3.1 Kortin rakenne
+### 2.3 Pelin aikana
 
-```
-┌───────────────┐
-│ 7             │  ← numero yläreunassa, isolla ja selvästi luettavana
-│               │
-│    [ kuva ]   │  ← kuva keskellä (oletuksena hämähäkki)
-│               │
-└───────────────┘
-```
+- **Vihje:** korostaa yhden mahdollisen siirron. Hyödylliset siirrot ovat etusijalla, eli ne,
+  jotka kääntävät kortin, rakentavat saman sarjan jonoa tai tyhjentävät sarakkeen.
+  Jos hyödyllisiä siirtoja ei ole mutta pakassa on kortteja, vihje osoittaa jakopakkaa.
+- **Siirrot loppuivat:** kun pakka on tyhjä eikä yhtään laillista siirtoa ole, peli näyttää
+  ilmoituksen. Vaihtoehdot ovat Kumoa, Pelaa sama jako uudelleen ja Uusi peli.
+- **Uusi peli kesken pelin:** peli kysyy vahvistuksen. Keskeytetty peli kirjataan
+  tilastoihin häviönä.
+- **Pelaa sama jako uudelleen:** tämä onnistuu valikosta ja häviöilmoituksesta.
+  Jos peli on kesken, se kirjataan häviönä.
+- Keskeneräinen peli tallentuu jokaisen siirron jälkeen, ja se jatkuu, kun sovellus
+  avataan uudelleen.
 
-- Kun kortit ovat pinossa päällekkäin, vain yläreunan kaistale näkyy. Siksi numeron
-  pitää olla selvästi luettavissa juuri siitä kaistaleesta.
-- Kortin taustapuoli on oma, rauhallinen kuvio, esimerkiksi hämähäkinverkko.
-  Se ei saa näyttää pelikortin selkämykseltä.
-- Oletushämähäkki piirretään itse vektorigrafiikkana (SVG), joten siihen ei tarvita
-  ulkopuolisia kuvia eikä lisenssejä.
-- ❓ Käytetäänkö yhtä hämähäkkiä kaikilla numeroilla, vai 13 eri hämähäkkiä
-  (esim. koko tai asento muuttuu numeron mukaan)?
+## 3. Ohjaus
 
-### 3.2 Omat kuvat galleriasta
+- **Raahaus:** kortin tai siirrettävän pinon voi raahata sormella toiseen sarakkeeseen.
+  Jos pudotuskohta ei kelpaa, kortit liukuvat takaisin paikalleen.
+- **Napautus:** kortti tai pino siirtyy automaattisesti parhaaseen sallittuun paikkaan.
+  Paras paikka on saman sarjan jatko, sitten muu sallittu kortti ja viimeisenä tyhjä sarake.
+  Jos sallittua paikkaa ei ole, kortti heilahtaa kevyesti.
+- **Jako:** jakopakkaa napautetaan.
+- **Näytön kierto:** peli toimii pysty- ja vaaka-asennossa, ja asettelu mukautuu,
+  kun puhelin kääntyy. Pelitilanne ja meneillään oleva raahaus eivät katoa kierron aikana.
+- Pitkät sarakkeet tiivistyvät pystysuunnassa niin, että ne mahtuvat aina näytölle
+  ilman vieritystä.
 
-- Asetuksissa on näkymä, jossa on 13 paikkaa, yksi kullekin numerolle 1–13.
-- Paikkaa napauttamalla avautuu puhelimen galleria, josta valitaan kuva.
-- Kuvat voi järjestää uudelleen raahaamalla ne paikasta toiseen.
-- Jokaisen paikan voi palauttaa hämähäkkikuvaan, ja kaikki paikat voi nollata kerralla.
-- Kuva rajataan kortin muotoon automaattisesti keskeltä.
-- Kuvat pienennetään (esim. 512 px) ja tallennetaan laitteelle, jotta peli pysyy
-  nopeana ja toimii ilman verkkoyhteyttä. Kuvia ei lähetetä minnekään.
-- ❓ Riittääkö automaattinen rajaus, vai pitääkö kuvaa voida itse siirtää ja zoomata?
-  Ehdotan, että manuaalinen rajaus tulee myöhemmin.
+## 4. Kortit
 
-## 4. Visuaalinen suunta
+### 4.1 Rakenne
 
-Tavoite on rauhallinen, luonnonläheinen ja kaunis ulkoasu, joka ei tuo mieleen kasinoa.
+- Numero 1–13 on **vain vasemmassa yläkulmassa**. Sen on oltava luettavissa myös silloin,
+  kun kortti on pinossa ja siitä näkyy vain yläreuna. Puhelimen pystyasennossa sarake on
+  noin 34 px leveä, ja numero mitoitetaan sen mukaan.
+- Numero on aina sarjan värinen. Artefaktilla kokeillaan myös vaihtoehtoja, joissa sarjan
+  väri näkyy lisäksi kortin taustassa tai kehyksessä.
+- Kuvan läpinäkyvillä alueilla näkyy **kortin taustaväri, joka on sarjan värisävy**.
+  Sama kuva näyttää siis eri sarjoissa eri väriseltä.
+- **Kuvan asettelu** valitaan kuvasettikohtaisesti:
+  - *Koko kortti:* kuva peittää koko kortin, ja numero on kuvan päällä.
+    Numeron luettavuus varmistetaan esimerkiksi pienellä taustalaatalla tai varjolla.
+  - *Kuva-alue:* kuvalla on oma alueensa numeron alapuolella.
+- **Rajat:** kortin reunaviivan ja kuva-alueen reunan voi piilottaa erikseen.
+- **Selkäpuoli:** oma rauhallinen kuvio, esimerkiksi hämähäkinverkko. Se ei saa näyttää
+  pelikortin selkämykseltä.
 
-- **Ei käytetä:** vihreää huopapöytää, punamusta-väritystä, maasymboleja (♠♥♦♣),
-  J/Q/K/A-merkintöjä eikä kasinofontteja.
-- **Ehdotus:** "metsän aamu". Tausta on tumma, pehmeä liukuväri (yönsininen tai
-  sammaleenvihreä), jossa on hento hämähäkinverkkokuvio ja ehkä kastepisaroita.
-  Kortit ovat pyöreäkulmaisia "laattoja", joissa on pehmeä varjo ja kermanvalkoinen
-  tai lasimainen pinta. Numerot ovat modernilla, pyöreällä fontilla.
-- Animaatiot ovat sulavia: kortti liukuu paikalleen, ja kun jono valmistuu, se
-  "kelautuu verkkoon".
-- Peli toimii pystyasennossa, ja 10 saraketta mahtuu puhelimen leveydelle.
-- ❓ Tumma vai vaalea teema, vai molemmat?
+### 4.2 Oletuskuva
 
-## 5. Ominaisuudet
+- Hämähäkki piirretään itse vektorigrafiikkana (SVG), joten ulkopuolisia kuvia tai
+  lisenssejä ei tarvita.
+- Sama hämähäkki on kaikilla numeroilla. Hämähäkki on yksivärinen, ja sen väri tulee
+  sarjan värisävystä.
 
-### MVP (ensimmäinen versio)
-- Uusi peli ja vaikeustason valinta
-- Korttien siirto raahaamalla ja napauttamalla (napautus siirtää kortin parhaaseen kohteeseen)
-- Jako pakasta
-- Kumoa (undo), rajattomasti
-- Valmiiden jonojen automaattinen poisto ja voittonäkymä
-- Keskeneräinen peli tallentuu automaattisesti ja jatkuu, kun sovellus avataan uudelleen
-- Omat kuvat ja niiden järjestäminen numeroille
-- Toimii ilman verkkoyhteyttä
+### 4.3 Sarjojen värit
 
-### Myöhemmin (ehdotuksia)
-- Vihje-nappi
-- Tilastot (pelatut, voitetut, paras aika tai vähiten siirtoja)
-- Pisteet ja ajastin
-- Äänet ja tärinäpalaute
-- Kuvan manuaalinen rajaus
-- Useita kuvasettejä (teemoja), joiden välillä voi vaihtaa
+- Valmiina on neljä hyvin toisistaan erottuvaa oletussävyä, ja ne sopivat sekä tummaan
+  että vaaleaan teemaan.
+- Sävyjä voi muuttaa asetuksista värinvalitsimella, ja oletukset voi palauttaa yhdellä napilla.
+- Värit ovat **yhteiset kaikille kuvaseteille**.
+- Värisokeuskuvioita ei tehdä.
 
-## 6. Teknologiaehdotus
+## 5. Kuvasetit
 
-**Suositus: PWA-sovellus, eli web-tekniikalla tehty sovellus, jonka voi asentaa
-puhelimen kotinäytölle.**
+- Pelaajalla voi olla **useita nimettyjä kuvasettejä**, esimerkiksi "Lemmikit" ja "Mökki".
+- Valmiina on poistamaton "Hämähäkit"-setti, jossa on pelkkä oletuskuva.
+- **Aktiivinen setti** valitaan asetuksista, ja se pysyy käytössä, kunnes pelaaja vaihtaa sen.
+  Vaihto näkyy heti, myös kesken pelin.
+- Setin voi luoda, nimetä uudelleen, monistaa ja poistaa. Poisto vaatii vahvistuksen.
+- Jokaisessa setissä on:
+  - **kuvakirjasto**, jossa on 1–13 kuvaa galleriasta
+  - **numerokartoitus**, jossa jokaiselle numerolle 1–13 valitaan jokin kirjaston kuvista.
+    Sama kuva voi olla usealla numerolla. Numero, jolle ei ole valittu kuvaa, saa hämähäkin.
+  - **asettelu** (koko kortti tai kuva-alue) ja rajojen näkyvyys
+- Numerokartoitusta muokataan näkymässä, jossa on 13 paikkaa. Paikkaa napautetaan, ja
+  kirjastosta valitaan kuva. Kuvia voi raahata paikasta toiseen.
+- Kuvat eivät koskaan lähde laitteelta. Varmuuskopiointia ja vientiä ei tehdä.
 
-- TypeScript ja Vite. Käyttöliittymä tehdään kevyellä kirjastolla (Preact) tai
-  ilman kirjastoa. Kortit ovat DOM-elementtejä ja liikkuvat CSS-animaatioilla,
-  mikä riittää hyvin 104 kortille.
-- Kuvat valitaan tavallisella kuvanvalitsimella (`<input type="file" accept="image/*">`),
-  joka avaa puhelimen gallerian sekä Androidilla että iOS:llä.
-- Kuvat ja pelitilanne tallennetaan laitteen IndexedDB-tietokantaan.
-- Service worker mahdollistaa offline-käytön ja kotinäytölle asentamisen.
-- Sovelluksen voi julkaista ilmaiseksi GitHub Pagesiin. App Storea, Google Playta
-  tai kehittäjätiliä ei tarvita.
-- Jos myöhemmin halutaan oikea sovelluskauppa-appi, saman koodin voi paketoida
-  Capacitorilla Androidille ja iOS:lle.
+## 6. Kuvaeditori
 
-**Vaihtoehto:** React Native ja Expo, eli natiivisovellus. Sen hyödyt ovat hieman
-natiivimpi tuntuma ja varmempi tallennus. Haittana jakelu on työläämpää,
-erityisesti iOS:llä.
+Editori avautuu, kun kuva lisätään galleriasta. Kuvaa voi muokata myöhemmin uudelleen.
 
-- ❓ Onko puhelimesi Android vai iPhone? iPhonella PWA:n tallennus on hieman
-  rajoitetumpi, joten silloin kannattaa harkita Capacitor-paketointia aikaisemmin.
+- **Rajaus:** kehys on kortin tai kuva-alueen muotoinen, setin asettelun mukaan.
+- **Siirto, zoomaus ja kierto** kahdella sormella. Kiertoon on lisäksi 90°-pikanapit.
+- **Pyyhekumi**, jolla taustan pyyhkii sormella pois.
+- **Palautussivellin**, jolla pyyhityn alueen saa takaisin.
+- Siveltimen koko on säädettävä. Siveltimen koko pysyy samana näytöllä zoomauksesta
+  riippumatta, joten lähentämällä saa tarkkaa jälkeä.
+- **Reunan pehmennys:** pyyhityille reunoille tulee pieni häivytys, jotta reuna ei ole
+  terävä eikä sumea. Voimakkuutta voi säätää liukusäätimellä, ja oletus on pieni.
+- **Kumoa ja tee uudelleen** editorin sisällä.
+- **Esikatselu:** valmis kortti näytetään kaikissa sarjojen väreissä, sekä kokonaisena
+  että pinoon peittyneenä.
+- Tallennus säilyttää alkuperäisen kuvan pienennettynä, editorin asetukset (siirto,
+  zoomaus, kierto ja maski) sekä valmiin kortin kuvan. Siksi kuvaa voi muokata myöhemmin
+  ilman laadun heikkenemistä.
 
-## 7. Avoimet kysymykset
+## 7. Tilastot
 
-1. Käytetäänkö värisävyjä sarjoina (1/2/4), vai riittääkö 1-sarjainen peli?
-2. Kuvia 13 (sama kuva kaikissa sarjoissa) vai yksi kuva jokaiselle sarjan ja numeron parille?
-3. Estetäänkö jako, jos jokin sarake on tyhjä?
-4. Yksi hämähäkki kaikilla numeroilla, vai jokaiselle numerolle oma?
-5. Riittääkö kuvan automaattinen rajaus MVP:ssä?
-6. Tumma vai vaalea teema, vai molemmat?
-7. Onko puhelimesi Android vai iPhone?
-8. Hyväksytkö teknologiaehdotuksen (PWA, TypeScript, Vite)?
+Tilastoilla on oma näkymänsä, ja vaikeustasot (1, 2, 3 ja 4 sarjaa) ovat eri välilehdillä.
+
+- **Luvut:** pelatut pelit, voitetut pelit, voittoprosentti, pisin voittoputki ja nykyinen putki.
+- **Paras tulos ja keskiarvo:** pisteet, aika ja siirrot. Aika ja siirrot lasketaan
+  voitetuista peleistä.
+- **Viivadiagrammit:** pisteet, aika ja siirrot peli peliltä. Jokaisessa on mukana
+  liukuva keskiarvo, ja kunkin pelin tiedot saa näkyviin napauttamalla.
+- **Nollaus:** tilastot voi nollata vahvistuksen jälkeen, joko yhden vaikeustason tai kaikki.
+- Jokaisesta pelistä tallennetaan päivämäärä, vaikeustaso, tulos (voitto, häviö tai
+  keskeytys), pisteet, aika, siirrot ja kumoamisten määrä.
+
+## 8. Asetukset
+
+- **Vaikeustaso** uutta peliä varten: 1, 2, 3 tai 4 sarjaa.
+- **Aktiivinen kuvasetti** ja kuvasettien hallinta.
+- **Sarjojen värit**, joille on palautus oletusarvoihin.
+- **Teema:** Järjestelmä (oletus), Vaalea tai Tumma.
+- **Äänet:** oletuksena pois päältä, ja äänenvoimakkuus on säädettävä.
+  - Äänet ovat hiljaisia ja luonnonläheisiä: pehmeä liukuääni siirrossa, kevyt kahina
+    jaossa, hento kilahdus jonon valmistuessa ja lyhyt melodia voitossa.
+  - Äänet syntetisoidaan Web Audio -rajapinnalla, joten äänitiedostoja tai lisenssejä ei tarvita.
+- **Animaatioiden nopeus:** Normaali tai Nopea.
+- **Vasenkätinen asettelu:** jakopakka ja valmiiden jonojen alue vaihtavat puolta.
+- **Asennusohje** avataan uudelleen tästä.
+- Värinää ei tehdä.
+
+## 9. Ensimmäinen avaus ja asennusohje
+
+- Kun peli avataan selaimessa eikä asennettuna sovelluksena, näkyy selkeä ja kuvitettu
+  asennusohje, joka on kirjoitettu ei-teknisille käyttäjille.
+  - **Android (Chrome):** ohjeessa on suora "Asenna"-nappi, jos selain tukee sitä.
+    Muuten ohje neuvoo käyttämään valikkoa ⋮ ja kohtaa "Lisää aloitusnäytölle" tai "Asenna sovellus".
+  - **iPhone (Safari):** jaa-painike ja sitten "Lisää Koti-valikkoon".
+    Jos iPhonella käytetään muuta selainta kuin Safaria, ohje neuvoo avaamaan sivun Safarissa.
+  - Puhelimen käyttöjärjestelmä tunnistetaan automaattisesti, ja oikea ohje näytetään ensin.
+- Ohjeen voi ohittaa valinnalla "Pelaa selaimessa". Ohjeen saa myöhemmin auki asetuksista.
+- Kun peli on asennettu, ohjetta ei enää näytetä.
+
+## 10. Tekniikka
+
+| Osa-alue | Valinta |
+|---|---|
+| Kieli ja työkalut | TypeScript ja Vite |
+| Käyttöliittymä | Preact. Kortit ovat DOM-elementtejä ja liikkuvat CSS-transformeilla. |
+| Kosketus | Pointer Events (raahaus, napautus ja kahden sormen eleet) |
+| Kuvaeditori | Canvas 2D: maski omalla canvasillaan, pehmennys sumentamalla maskia |
+| Tallennus | IndexedDB (kuvat Blobeina, setit, pelitilanne ja tilastot) |
+| Kaaviot | Itse tehdyt SVG-viivadiagrammit, ei raskasta kaaviokirjastoa |
+| PWA | `vite-plugin-pwa`: offline-käyttö, manifesti ja kuvakkeet |
+| Testit | Vitest pelilogiikalle (säännöt, siirrot, kumoa, pisteet ja jako) |
+| Julkaisu | GitHub Actions → GitHub Pages (repo tehdään julkiseksi) |
+
+- Pelilogiikka on erillään käyttöliittymästä, ja se on puhdasta ja testattavaa TypeScriptiä.
+- Pelissä ei ole palvelinta, analytiikkaa eikä ulkoisia kutsuja.
+- Uusi versio otetaan käyttöön, kun sovellus avataan seuraavan kerran.
+- Kaikki tallennettu data on vain laitteella. Peli pyytää selaimelta pysyvää tallennustilaa
+  (`navigator.storage.persist()`), jotta selain ei poista kuvia muistin käydessä vähiin.
+
+## 11. Seuraava vaihe: graafinen ilme
+
+Ilme suunnitellaan artefaktina ennen toteutusta. Artefaktissa on 2–3 tyylivaihtoehtoa vierekkäin:
+
+- pelinäkymä pysty- ja vaaka-asennossa, sekä tumma että vaalea teema
+- kortin rakenne: numeron ja sarjan värin sijoitusvaihtoehdot, koko kortin ja kuva-alueen asettelu
+  sekä rajat näkyvissä ja piilotettuina
+- selkäpuolen kuvio ja oletushämähäkki
+- neljä oletusväriä sarjoille
+- ehdotuksia voittoanimaatioksi ja jonon valmistumisen animaatioksi
+
+## 12. Rajattu pois (mahdollisia myöhempiä lisäyksiä)
+
+- Vain ratkaistavat jaot
+- Päivän haaste
+- Kuvasettien vienti, tuonti ja varmuuskopiointi
+- Automaattinen taustanpoisto tekoälyllä
+- Englannin kieli
+- Värinä
