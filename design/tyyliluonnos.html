@@ -1,0 +1,461 @@
+<title>Custom Spider -ilme</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Nunito+Sans:wght@400;600;700&family=Young+Serif&family=Figtree:wght@400;600;700&family=Lexend:wght@400;500;600&display=swap">
+<style>
+/* Layout: ohjauspaneeli + puhelinmalli vierekkäin (kapealla allekkain), alla lähikuvat ja animaatioehdotukset.
+   Tokenit: sivun runko, pelipöytä, kortit ja neljä sarjan väriä – jokaiselle tyylille vaalea ja tumma. */
+:root{
+  --bg:#e4ece7; --fg:#1b2b26; --muted:#566b63; --line:#c3d3cb; --panel:#f3f7f4;
+  --b1:#dbe8e1; --b2:#bcd3c8; --web:rgba(27,43,38,.10); --dew:rgba(255,255,255,.75);
+  --card:#fbfdfb; --edge:#c2d3ca; --back1:#3a6a5c; --back2:#24463d; --backweb:rgba(255,255,255,.28);
+  --hud:#1b2b26; --bezel:#1a1d1f; --shadow:0 1px 2px rgba(20,40,30,.18),0 3px 8px rgba(20,40,30,.10);
+  --s0:#2e7a58; --s1:#2a6c9b; --s2:#bd5d37; --s3:#7556a3;
+  --radk:.16; --glowk:0; --numw:600;
+  --fnum:"Fredoka","Nunito Sans",system-ui,sans-serif;
+  --fbody:"Nunito Sans",system-ui,sans-serif;
+  --fdisp:"Fredoka","Nunito Sans",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){color-scheme:dark}
+  :root:not([data-theme="light"]) body[data-style="kaste"]{
+    --bg:#0d1916; --fg:#e2eee8; --muted:#8fa79e; --line:#25403a; --panel:#13241f;
+    --b1:#12302a; --b2:#0b1c18; --web:rgba(200,235,220,.09); --dew:rgba(200,240,225,.55);
+    --card:#1c312b; --edge:#2e4a42; --back1:#2b5649; --back2:#183229; --backweb:rgba(220,255,240,.20);
+    --hud:#e2eee8; --shadow:0 1px 2px rgba(0,0,0,.5),0 4px 10px rgba(0,0,0,.35);
+    --s0:#62c697; --s1:#5ea9de; --s2:#ee8b60; --s3:#b296e2;
+  }
+}
+:root[data-theme="dark"]{color-scheme:dark}
+:root[data-theme="dark"] body[data-style="kaste"]{
+  --bg:#0d1916; --fg:#e2eee8; --muted:#8fa79e; --line:#25403a; --panel:#13241f;
+  --b1:#12302a; --b2:#0b1c18; --web:rgba(200,235,220,.09); --dew:rgba(200,240,225,.55);
+  --card:#1c312b; --edge:#2e4a42; --back1:#2b5649; --back2:#183229; --backweb:rgba(220,255,240,.20);
+  --hud:#e2eee8; --shadow:0 1px 2px rgba(0,0,0,.5),0 4px 10px rgba(0,0,0,.35);
+  --s0:#62c697; --s1:#5ea9de; --s2:#ee8b60; --s3:#b296e2;
+}
+
+/* Muste */
+body[data-style="muste"]{
+  --bg:#e7e9ec; --fg:#202329; --muted:#5d636d; --line:#c9cdd4; --panel:#f4f5f7;
+  --b1:#eef0f2; --b2:#d9dde2; --web:rgba(32,35,41,.09); --dew:transparent;
+  --card:#fcfcfb; --edge:#c8ccd2; --back1:#2a3142; --back2:#1b2030; --backweb:rgba(255,255,255,.22);
+  --hud:#202329; --shadow:0 1px 1px rgba(20,24,32,.20),0 2px 5px rgba(20,24,32,.08);
+  --s0:#2e4ea3; --s1:#1d8676; --s2:#bf6c25; --s3:#a13a69;
+  --radk:.07; --glowk:0; --numw:400;
+  --fnum:"Young Serif",Georgia,"Times New Roman",serif;
+  --fbody:"Figtree",system-ui,sans-serif;
+  --fdisp:"Young Serif",Georgia,serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) body[data-style="muste"]{
+    --bg:#15171b; --fg:#e7e8eb; --muted:#9298a3; --line:#2c3038; --panel:#1c1f24;
+    --b1:#1d2026; --b2:#121418; --web:rgba(230,232,240,.07);
+    --card:#24282f; --edge:#363b45; --back1:#39415a; --back2:#232839; --backweb:rgba(255,255,255,.18);
+    --hud:#e7e8eb; --shadow:0 1px 2px rgba(0,0,0,.6),0 3px 8px rgba(0,0,0,.3);
+    --s0:#7f97f0; --s1:#4fc6b2; --s2:#efa25f; --s3:#e17ba9;
+  }
+}
+:root[data-theme="dark"] body[data-style="muste"]{
+  --bg:#15171b; --fg:#e7e8eb; --muted:#9298a3; --line:#2c3038; --panel:#1c1f24;
+  --b1:#1d2026; --b2:#121418; --web:rgba(230,232,240,.07);
+  --card:#24282f; --edge:#363b45; --back1:#39415a; --back2:#232839; --backweb:rgba(255,255,255,.18);
+  --hud:#e7e8eb; --shadow:0 1px 2px rgba(0,0,0,.6),0 3px 8px rgba(0,0,0,.3);
+  --s0:#7f97f0; --s1:#4fc6b2; --s2:#efa25f; --s3:#e17ba9;
+}
+
+/* Yöhehku */
+body[data-style="hehku"]{
+  --bg:#e6e8f3; --fg:#1a1f3a; --muted:#5a6084; --line:#cbd0e6; --panel:#f3f4fa;
+  --b1:#eef0fa; --b2:#d7dcf0; --web:rgba(40,50,110,.09); --dew:rgba(90,110,220,.35);
+  --card:#ffffff; --edge:#d3d8ee; --back1:#2a3170; --back2:#151a45; --backweb:rgba(170,190,255,.35);
+  --hud:#1a1f3a; --shadow:0 1px 2px rgba(30,40,90,.16),0 3px 8px rgba(30,40,90,.10);
+  --s0:#0e9b77; --s1:#2d6bd4; --s2:#cf7b19; --s3:#a548c6;
+  --radk:.11; --glowk:.25; --numw:600;
+  --fnum:"Lexend","Nunito Sans",system-ui,sans-serif;
+  --fbody:"Nunito Sans",system-ui,sans-serif;
+  --fdisp:"Lexend","Nunito Sans",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) body[data-style="hehku"]{
+    --bg:#070a17; --fg:#e4e8ff; --muted:#8e96c4; --line:#1e2550; --panel:#0d1230;
+    --b1:#121a42; --b2:#05081a; --web:rgba(150,170,255,.10); --dew:rgba(140,230,255,.7);
+    --card:#0e1534; --edge:#262f63; --back1:#1b2260; --back2:#0b0f30; --backweb:rgba(140,170,255,.35);
+    --hud:#e4e8ff; --shadow:0 2px 6px rgba(0,0,0,.6);
+    --s0:#6af0c6; --s1:#7cb7ff; --s2:#ffb86a; --s3:#e78cff; --glowk:1;
+  }
+}
+:root[data-theme="dark"] body[data-style="hehku"]{
+  --bg:#070a17; --fg:#e4e8ff; --muted:#8e96c4; --line:#1e2550; --panel:#0d1230;
+  --b1:#121a42; --b2:#05081a; --web:rgba(150,170,255,.10); --dew:rgba(140,230,255,.7);
+  --card:#0e1534; --edge:#262f63; --back1:#1b2260; --back2:#0b0f30; --backweb:rgba(140,170,255,.35);
+  --hud:#e4e8ff; --shadow:0 2px 6px rgba(0,0,0,.6);
+  --s0:#6af0c6; --s1:#7cb7ff; --s2:#ffb86a; --s3:#e78cff; --glowk:1;
+}
+
+*{box-sizing:border-box}
+html,body{background:var(--bg)}
+body{color:var(--fg);font-family:var(--fbody);font-size:15px;line-height:1.5;transition:background .3s,color .3s;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 56px}
+.wrap{max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:40px}
+header h1{font-family:var(--fdisp);font-weight:600;font-size:clamp(28px,5vw,40px);line-height:1.1;margin:0 0 8px;text-wrap:balance}
+body[data-style="muste"] header h1{font-weight:400}
+header p{margin:0;color:var(--muted);max-width:62ch}
+h2{font-family:var(--fdisp);font-weight:600;font-size:22px;margin:0 0 4px;text-wrap:balance}
+body[data-style="muste"] h2{font-weight:400}
+.lead{color:var(--muted);margin:0 0 18px;max-width:62ch}
+
+.studio{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:32px;align-items:start}
+@media (max-width:860px){.studio{grid-template-columns:minmax(0,1fr)}}
+.controls{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:14px}
+.ctl label{display:block;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.seg{display:flex;flex-wrap:wrap;gap:4px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:3px}
+.seg button{flex:1 1 auto;font:inherit;font-size:13.5px;font-weight:600;color:var(--fg);background:transparent;border:0;border-radius:7px;padding:6px 10px;cursor:pointer;min-height:32px}
+.seg button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+.seg button:focus-visible,.btn:focus-visible,.file:focus-within{outline:2px solid var(--s1);outline-offset:2px}
+.note{font-size:13.5px;color:var(--muted);margin:2px 0 0;min-height:3em}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap}
+.btn{font:inherit;font-size:13.5px;font-weight:700;color:var(--fg);background:transparent;border:1px solid var(--line);border-radius:9px;padding:8px 12px;cursor:pointer}
+.btn.primary{background:var(--s0);border-color:var(--s0);color:var(--card)}
+.file{position:relative;display:inline-flex}
+.file input{position:absolute;inset:0;opacity:0;cursor:pointer}
+
+/* Puhelinmalli */
+.stage{display:flex;flex-direction:column;align-items:center;gap:10px;min-width:0}
+.devicebox{width:100%;display:flex;justify-content:center;overflow:hidden}
+.scaler{transform-origin:top left}
+.frame{position:relative;border:9px solid var(--bezel);border-radius:40px;overflow:hidden;
+  background:linear-gradient(165deg,var(--b1),var(--b2));box-shadow:0 18px 40px rgba(0,0,0,.25)}
+.frame .webbg{position:absolute;inset:0;width:100%;height:100%;color:var(--web);pointer-events:none}
+.frame .webbg .dew{fill:var(--dew)}
+.hud{position:absolute;left:0;right:0;top:0;height:44px;display:flex;align-items:center;gap:6px;padding:0 10px;color:var(--hud);font-size:12px;font-variant-numeric:tabular-nums}
+.hud .stat{display:flex;flex-direction:column;line-height:1.1;min-width:0}
+.hud .stat b{font-family:var(--fnum);font-weight:var(--numw);font-size:15px}
+.hud .stat span{font-size:10px;letter-spacing:.06em;text-transform:uppercase;opacity:.7}
+.hud .sp{flex:1}
+.hud .ic{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:color-mix(in srgb,var(--card) 55%,transparent);border:1px solid color-mix(in srgb,var(--edge) 70%,transparent)}
+.hud .ic svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.cols{position:absolute;display:flex}
+.col{position:relative;flex:none}
+.slot{position:absolute;left:0;top:0;border:1.5px dashed color-mix(in srgb,var(--hud) 25%,transparent);border-radius:calc(var(--w)*var(--radk))}
+.tray{position:absolute;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.found{display:grid;gap:4px}
+.stock{position:relative}
+.stocklbl{position:absolute;font-size:10.5px;color:var(--hud);opacity:.75;white-space:nowrap;letter-spacing:.04em}
+
+/* Kortti */
+.card{position:absolute;width:var(--w);height:calc(var(--w)*1.42);border-radius:calc(var(--w)*var(--radk));overflow:hidden;box-shadow:var(--shadow)}
+.card.static{position:relative}
+.card.up{--face:var(--card);background:var(--face);border:1px solid var(--edge)}
+#app[data-cardb="false"] .card.up{border-color:transparent}
+#app[data-cmode="kehys"] .card.up{border:max(1.5px,calc(var(--w)*.055)) solid var(--c)}
+#app[data-cmode="tausta"] .card.up{--face:color-mix(in srgb,var(--c) 24%,var(--card))}
+body[data-style="hehku"] .card.up{box-shadow:var(--shadow),0 0 calc(var(--glowk)*var(--w)*.22) color-mix(in srgb,var(--c) 55%,transparent)}
+body[data-style="hehku"] #app[data-cardb="true"] .card.up{border-color:color-mix(in srgb,var(--c) calc(30% + var(--glowk)*40%),var(--edge))}
+.card .num{position:absolute;left:calc(var(--w)*.09);top:calc(var(--w)*.05);font-family:var(--fnum);font-weight:var(--numw);
+  font-size:calc(var(--w)*.44);line-height:1.08;letter-spacing:-.03em;color:var(--c);font-variant-numeric:tabular-nums;z-index:2}
+body[data-style="hehku"] .card .num{text-shadow:0 0 calc(var(--glowk)*var(--w)*.12) color-mix(in srgb,var(--c) 70%,transparent)}
+.card .pic{position:absolute;left:calc(var(--w)*.08);right:calc(var(--w)*.08);top:calc(var(--w)*.6);bottom:calc(var(--w)*.08);
+  display:flex;align-items:center;justify-content:center;color:var(--c);border-radius:calc(var(--w)*var(--radk)*.6);overflow:hidden}
+#app[data-picb="true"] .card .pic{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 35%,var(--edge))}
+.card .pic svg{width:100%;height:100%}
+.card .pic img{width:100%;height:100%;object-fit:cover;display:block}
+#app[data-layout="full"] .card .pic{inset:0;border-radius:0;box-shadow:none}
+#app[data-layout="full"] .card .pic svg{width:82%;height:82%;transform:translateY(9%)}
+#app[data-layout="full"] .card .num{background:color-mix(in srgb,var(--face) 82%,transparent);border-radius:calc(var(--w)*.12);padding:0 calc(var(--w)*.05);left:calc(var(--w)*.05);top:calc(var(--w)*.04)}
+.card.down{background:linear-gradient(160deg,var(--back1),var(--back2));border:1px solid color-mix(in srgb,var(--back1) 70%,var(--edge))}
+.card.down svg{position:absolute;inset:0;width:100%;height:100%;color:var(--backweb)}
+.card.hint{outline:2px solid var(--s2);outline-offset:1px}
+
+/* Voittoanimaatio */
+.win{position:absolute;inset:0;z-index:20;display:grid;place-items:center;background:color-mix(in srgb,var(--b2) 55%,transparent);opacity:0;transition:opacity .5s;pointer-events:none}
+.win.on{opacity:1;pointer-events:auto}
+.win svg{position:absolute;inset:0;width:100%;height:100%;color:color-mix(in srgb,var(--hud) 55%,transparent)}
+.win svg path{fill:none;stroke:currentColor;stroke-width:1.2;stroke-dasharray:1;stroke-dashoffset:1}
+.win.on svg path{animation:draw 1.1s cubic-bezier(.4,.1,.2,1) forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.winmsg{position:relative;text-align:center;background:var(--card);color:var(--fg);border:1px solid var(--edge);border-radius:18px;padding:18px 24px;box-shadow:var(--shadow);transform:translateY(10px) scale(.96);opacity:0;transition:all .6s 1.6s}
+.win.on .winmsg{transform:none;opacity:1}
+.winmsg h3{font-family:var(--fdisp);font-weight:600;font-size:26px;margin:0 0 4px}
+body[data-style="muste"] .winmsg h3{font-weight:400}
+.winmsg p{margin:0 0 12px;color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums}
+.winmsg .kings{display:flex;justify-content:center;gap:4px;margin-bottom:12px}
+
+/* Lähikuvat */
+.gallery{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-end}
+.gallery figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:8px}
+.gallery figcaption{font-size:12.5px;color:var(--muted)}
+.ranks{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+.cascade{position:relative}
+.ideas{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.idea{border-top:2px solid var(--line);padding-top:12px}
+.idea h3{font-size:16px;margin:0 0 6px;font-family:var(--fbody);font-weight:700}
+.idea p{margin:0;color:var(--muted);font-size:14px}
+.ask{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.ask ol{margin:8px 0 0;padding-left:20px;display:grid;gap:4px}
+@media (prefers-reduced-motion:reduce){.win.on svg path{animation:none;stroke-dashoffset:0}.winmsg{transition:none}body{transition:none}}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="spider" viewBox="0 0 100 100">
+      <g fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round">
+        <g id="legs">
+          <path d="M45 39 L31 23 L25 7"/>
+          <path d="M44 43 L24 33 L9 35"/>
+          <path d="M44 48 L25 55 L12 71"/>
+          <path d="M45 52 L34 68 L29 92"/>
+          <path d="M47 31 Q43 26 44 22"/>
+        </g>
+        <use href="#legs" transform="translate(100 0) scale(-1 1)"/>
+      </g>
+      <g fill="currentColor">
+        <ellipse cx="50" cy="63" rx="14" ry="17.5"/>
+        <circle cx="50" cy="40" r="8.5"/>
+      </g>
+      <path d="M50 53 l4 6 -4 5 -4 -5z M50 66 l3 4 -3 4 -3 -4z" fill="var(--face, #fff)" opacity=".55"/>
+    </symbol>
+    <symbol id="webback" viewBox="0 0 100 142" preserveAspectRatio="xMidYMid slice"><path id="webbackpath" fill="none" stroke="currentColor" stroke-width="1"/></symbol>
+  </defs>
+</svg>
+
+<div class="wrap" id="app" data-layout="area" data-cmode="num" data-cardb="true" data-picb="true">
+  <header>
+    <h1>Custom Spider</h1>
+    <p>Kolme tyylisuuntaa pelille. Vaihda tyyliä, teemaa ja asentoa oikealta, ja kokeile, miten sarjan väri ja kuvan asettelu toimivat. Voit myös ladata oman kuvan kortteihin nähdäksesi, miltä se näyttää pöydällä.</p>
+  </header>
+
+  <section class="studio">
+    <div class="stage">
+      <div class="devicebox" id="devicebox"><div class="scaler" id="scaler"></div></div>
+      <div class="btnrow">
+        <button class="btn" id="winbtn" type="button">Näytä voittoanimaatio</button>
+      </div>
+    </div>
+    <aside class="controls" id="controls" aria-label="Valinnat"></aside>
+  </section>
+
+  <section>
+    <h2>Kortit lähikuvassa</h2>
+    <p class="lead">Kortti jokaisessa sarjan värissä ja selkäpuoli. Alla numerot 1–13 yhdessä sarjassa sekä pino siinä koossa, jossa se näkyy puhelimen pystyasennossa.</p>
+    <div class="gallery" id="gallery"></div>
+    <div class="ranks" id="ranks"></div>
+  </section>
+
+  <section>
+    <h2>Animaatioehdotukset</h2>
+    <p class="lead">Voittoanimaatiota voi kokeilla yllä olevalla napilla. Muut ehdotukset on kuvattu tässä, ja ne toteutetaan valitun tyylin mukaisesti.</p>
+    <div class="ideas">
+      <div class="idea"><h3>Voitto: verkko kutoutuu</h3><p>Pöydän ylle piirtyy hämähäkinverkko säikeittäin keskeltä ulospäin. Sen jälkeen esiin nousee tulosikkuna, jossa ovat kahdeksan valmista jonoa. Tämä on demossa.</p></div>
+      <div class="idea"><h3>Voitto: kastepisarat</h3><p>Valmiit jonot liukuvat yksitellen keskelle, ja jokaisen kohdalla verkon säikeelle syttyy hohtava pisara. Kun kahdeksas pisara syttyy, verkko välähtää kerran.</p></div>
+      <div class="idea"><h3>Jonon valmistuminen</h3><p>Valmis jono 13 → 1 painuu kasaan ylhäältä alas ja lentää valmiiden jonojen paikalle. Sen jälkeen paikka hehkuu hetken sarjan värissä.</p></div>
+      <div class="idea"><h3>Kortin kääntyminen</h3><p>Kun alla oleva kortti paljastuu, se kääntyy kevyesti 3D-kääntönä noin 0,25 sekunnissa. Animaatioiden nopeuden voi valita asetuksista.</p></div>
+    </div>
+  </section>
+
+  <section class="ask">
+    <h2>Kerro, mikä toimii</h2>
+    <ol>
+      <li>Mikä tyylisuunta on lähimpänä, vai yhdistetäänkö jotain eri suunnista?</li>
+      <li>Missä sarjan väri näkyy parhaiten: pelkässä numerossa, kehyksessä vai taustassa?</li>
+      <li>Onko numero luettava pystyasennossa, kun kortit ovat pinossa?</li>
+      <li>Toimiiko hämähäkki, selkäpuoli ja oletusvärit, vai muutetaanko jotain?</li>
+      <li>Mikä voittoanimaatio, tai yhdistelmä niistä?</li>
+    </ol>
+  </section>
+</div>
+
+<script>
+(function(){
+const state={style:'kaste',theme:'system',orient:'pysty',suits:4,cmode:'num',layout:'area',cardb:'true',picb:'true',img:null};
+try{const s=JSON.parse(localStorage.getItem('cs-style')||'null');if(s){Object.assign(state,s);state.img=null;}}catch(e){}
+
+const NOTES={
+  kaste:'Aamukaste: sammaleenvihreä metsänpohja, pehmeät pyöreät laatat ja kastepisarat verkossa. Leppoisa ja lämmin.',
+  muste:'Muste: kivenharmaa paperi ja tussin tunnelma. Graafinen ja hillitty, ja numeroiden kirjasimessa on luonnetta.',
+  hehku:'Yöhehku: syvä yötaivas, ja kortit hehkuvat sarjan värissä kuin kiiltomadot. Vaikuttavin tummassa teemassa.'
+};
+const CONTROLS=[
+  {k:'style',l:'Tyylisuunta',o:[['kaste','Aamukaste'],['muste','Muste'],['hehku','Yöhehku']]},
+  {k:'theme',l:'Teema',o:[['system','Järjestelmä'],['light','Vaalea'],['dark','Tumma']]},
+  {k:'orient',l:'Asento',o:[['pysty','Pysty'],['vaaka','Vaaka']]},
+  {k:'suits',l:'Sarjoja (vaikeus)',o:[['1','1'],['2','2'],['3','3'],['4','4']]},
+  {k:'cmode',l:'Sarjan väri näkyy',o:[['num','Numerossa'],['kehys','+ kehyksessä'],['tausta','+ taustassa']]},
+  {k:'layout',l:'Kuvan asettelu',o:[['area','Kuva-alue'],['full','Koko kortti']]},
+  {k:'cardb',l:'Kortin reuna',o:[['true','Näkyy'],['false','Piilossa']]},
+  {k:'picb',l:'Kuva-alueen reuna',o:[['true','Näkyy'],['false','Piilossa']]}
+];
+
+// Hämähäkinverkko: säteet + kaartuvat renkaat
+function web(cx,cy,R,spokes,rings,rot,sag,sep){
+  const out=[];const ang=[];
+  for(let i=0;i<spokes;i++){ang.push(rot+i*2*Math.PI/spokes+(Math.sin(i*2.7)*0.06));}
+  const sp=ang.map(a=>`M${cx.toFixed(1)} ${cy.toFixed(1)}L${(cx+Math.cos(a)*R).toFixed(1)} ${(cy+Math.sin(a)*R).toFixed(1)}`);
+  const rg=[];
+  for(let k=1;k<=rings;k++){
+    const r=R*Math.pow(k/rings,1.15);let d='';
+    for(let i=0;i<=spokes;i++){
+      const a=ang[i%spokes],x=cx+Math.cos(a)*r,y=cy+Math.sin(a)*r;
+      if(i===0){d+=`M${x.toFixed(1)} ${y.toFixed(1)}`;}
+      else{const am=(ang[(i-1)%spokes]+(i===spokes?a+2*Math.PI:a))/2,rm=r*(1-sag);
+        d+=`Q${(cx+Math.cos(am)*rm).toFixed(1)} ${(cy+Math.sin(am)*rm).toFixed(1)} ${x.toFixed(1)} ${y.toFixed(1)}`;}
+    }
+    rg.push(d);
+  }
+  return sep?{spokes:sp,rings:rg}:sp.join('')+rg.join('');
+}
+document.getElementById('webbackpath').setAttribute('d',web(50,71,95,12,7,0.2,0.12));
+
+const SAMPLE=[
+  {d:4,u:[[9,1]]},
+  {d:4,u:[[12,0],[11,0],[10,0],[9,0],[8,0]]},
+  {d:5,u:[[6,2]]},
+  {d:3,u:[[13,3],[12,3]]},
+  {d:4,u:[[5,1],[4,1],[3,2]]},
+  {d:3,u:[[10,2],[9,2],[8,2],[7,1],[6,1],[5,1],[4,1]]},
+  {d:4,u:[[2,3]]},
+  {d:0,u:[]},
+  {d:4,u:[[11,1],[10,3]]},
+  {d:2,u:[[7,0],[6,0],[5,0],[4,0],[3,3],[2,3],[1,3]]}
+];
+const DONE=[0,2];
+
+function esc(s){return String(s).replace(/"/g,'&quot;');}
+function face(rank,suit,w,x,y,extra){
+  const s=suit%state.suits;
+  const pic=state.img?`<img src="${esc(state.img)}" alt="">`:`<svg viewBox="0 0 100 100" aria-hidden="true"><use href="#spider"/></svg>`;
+  const pos=x==null?'':`left:${x}px;top:${y}px;`;
+  return `<div class="card up ${x==null?'static':''} ${extra||''}" style="--c:var(--s${s});--w:${w}px;${pos}"><div class="pic">${pic}</div><div class="num">${rank}</div></div>`;
+}
+function back(w,x,y){
+  const pos=x==null?'':`left:${x}px;top:${y}px;`;
+  return `<div class="card down ${x==null?'static':''}" style="--w:${w}px;${pos}"><svg aria-hidden="true"><use href="#webback"/></svg></div>`;
+}
+const ICONS={
+  undo:'<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>',
+  hint:'<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.6 10.8c.6.5 1.1 1.3 1.1 2.2h5c0-.9.5-1.7 1.1-2.2A6 6 0 0 0 12 3z"/>',
+  menu:'<path d="M4 7h16M4 12h16M4 17h16"/>'
+};
+
+let FW=0,FH=0;
+function renderBoard(){
+  const P=state.orient==='pysty';
+  FW=P?360:760;FH=P?760:360;
+  const hudH=44,pad=P?6:10,gap=P?3:6;
+  const sideW=P?0:104,trayH=P?66:0;
+  const colsX=pad,colsY=hudH+(P?6:2);
+  const colsW=FW-18-pad*2-sideW; // 18 = kehyksen reunat
+  const availH=FH-18-colsY-trayH-pad;
+  let w=Math.floor((colsW-9*gap)/10*10)/10;
+  const h=w*1.42,dOff=w*.2,uOff=w*.58;
+  let html=`<svg class="webbg" viewBox="0 0 ${FW} ${FH}" preserveAspectRatio="none" aria-hidden="true"><path d="${web(FW*(P?.92:.94),FH*(P?.06:.08),Math.max(FW,FH)*.75,14,9,1.9,.1)}" fill="none" stroke="currentColor" stroke-width="1"/>`;
+  if(state.style==='kaste'||state.style==='hehku'){
+    [[.62,.21],[.78,.33],[.49,.12],[.86,.46],[.71,.14]].forEach(([a,b],i)=>{html+=`<circle class="dew" cx="${FW*a}" cy="${FH*b}" r="${2.2+i%2}"/>`;});
+  }
+  html+='</svg>';
+  html+=`<div class="hud">
+    <div class="stat"><b>412</b><span>Pisteet</span></div>
+    <div class="stat" style="margin-left:10px"><b>6:24</b><span>Aika</span></div>
+    <div class="stat" style="margin-left:10px"><b>88</b><span>Siirrot</span></div>
+    <div class="sp"></div>
+    ${['undo','hint','menu'].map(k=>`<div class="ic" title="${{undo:'Kumoa',hint:'Vihje',menu:'Valikko'}[k]}"><svg viewBox="0 0 24 24">${ICONS[k]}</svg></div>`).join('')}
+  </div>`;
+  html+=`<div class="cols" style="left:${colsX}px;top:${colsY}px;gap:${gap}px">`;
+  SAMPLE.forEach((c,ci)=>{
+    const n=c.d+c.u.length;
+    const offs=[];for(let i=0;i<n-1;i++)offs.push(i<c.d?dOff:uOff);
+    const sum=offs.reduce((a,b)=>a+b,0);
+    const k=sum>0?Math.min(1,(availH-h)/sum):1;
+    html+=`<div class="col" style="--w:${w}px;width:${w}px;height:${availH}px">`;
+    if(n===0){html+=`<div class="slot" style="width:${w}px;height:${h}px"></div>`;}
+    let y=0;
+    for(let i=0;i<n;i++){
+      if(i<c.d)html+=back(w,0,y);
+      else{const [r,s]=c.u[i-c.d];html+=face(r,s,w,0,y,(ci===4&&i===n-1)?'hint':'');}
+      if(i<n-1)y+=offs[i]*k;
+    }
+    html+='</div>';
+  });
+  html+='</div>';
+  // Valmiit jonot + jakopakka
+  const fw=P?22:26;
+  let found='';
+  for(let i=0;i<8;i++){
+    found+=i<DONE.length?face(13,DONE[i],fw,null,null):`<div class="card static" style="--w:${fw}px;box-shadow:none;border:1.5px dashed color-mix(in srgb,var(--hud) 22%,transparent)"></div>`;
+  }
+  const sw=P?36:44,sh=sw*1.42;
+  let stock='';for(let i=0;i<3;i++)stock+=back(sw,i*4,0);
+  const stockBox=`<div class="stock" style="width:${sw+8}px;height:${sh+16}px">${stock}<div class="stocklbl" style="top:${sh+3}px;left:0">3 jakoa</div></div>`;
+  if(P){
+    html+=`<div class="tray" style="left:${pad+2}px;right:${pad+4}px;bottom:${pad+2}px;height:${trayH-6}px">
+      <div class="found" style="grid-template-columns:repeat(8,${fw}px)">${found}</div>${stockBox}</div>`;
+  }else{
+    html+=`<div class="tray" style="right:${pad}px;top:${hudH+4}px;bottom:${pad}px;width:${sideW-14}px;flex-direction:column;align-items:center">
+      <div class="found" style="grid-template-columns:repeat(2,${fw}px)">${found}</div>${stockBox}</div>`;
+  }
+  // voitto
+  const W=web(FW/2,FH/2,Math.max(FW,FH)*.6,16,10,.1,.08,true);
+  const paths=[...W.spokes.map((d,i)=>`<path pathLength="1" d="${d}" style="animation-delay:${(i*.03).toFixed(2)}s"/>`),...W.rings.map((d,i)=>`<path pathLength="1" d="${d}" style="animation-delay:${(.45+i*.08).toFixed(2)}s"/>`)].join('');
+  let kings='';for(let i=0;i<8;i++)kings+=face(13,i%4,24,null,null);
+  html+=`<div class="win" id="win" role="dialog" aria-label="Voitto"><svg viewBox="0 0 ${FW} ${FH}" preserveAspectRatio="none" aria-hidden="true">${paths}</svg>
+    <div class="winmsg"><h3>Voitit!</h3><div class="kings">${kings}</div><p>Pisteet 1 214 · aika 8:41 · 168 siirtoa</p>
+    <div class="btnrow" style="justify-content:center"><button class="btn primary" type="button" data-close>Uusi peli</button><button class="btn" type="button" data-close>Tilastot</button></div></div></div>`;
+  const sc=document.getElementById('scaler');
+  sc.innerHTML=`<div class="frame" style="width:${FW}px;height:${FH}px">${html}</div>`;
+  sc.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>document.getElementById('win').classList.remove('on'));
+  fit();
+}
+function fit(){
+  const box=document.getElementById('devicebox'),sc=document.getElementById('scaler');
+  const avail=box.clientWidth;const s=Math.min(1,avail/FW);
+  sc.style.transform=`scale(${s})`;sc.style.width=FW+'px';box.style.height=(FH*s)+'px';
+  box.style.justifyContent=s<1?'flex-start':'center';
+}
+
+function renderGallery(){
+  const g=document.getElementById('gallery');
+  const ranks=[13,9,4,1];let h='';
+  for(let s=0;s<4;s++){
+    const vis=s<state.suits;
+    h+=`<figure style="${vis?'':'opacity:.35'}">${face(ranks[s],s,104,null,null)}<figcaption>Sarja ${s+1}${vis?'':' (ei käytössä)'}</figcaption></figure>`;
+  }
+  h+=`<figure>${back(104,null,null)}<figcaption>Selkäpuoli</figcaption></figure>`;
+  // pino oikeassa koossa
+  const w=33,u=w*.58;let c='';for(let i=0;i<6;i++)c+=face(13-i,0,w,0,i*u);
+  h+=`<figure><div class="cascade" style="width:${w}px;height:${w*1.42+5*u}px">${c}</div><figcaption>Pystyasennon koko</figcaption></figure>`;
+  g.innerHTML=h;
+  let r='';for(let i=1;i<=13;i++)r+=face(i,0,56,null,null);
+  document.getElementById('ranks').innerHTML=r;
+}
+
+function renderControls(){
+  const el=document.getElementById('controls');
+  let h='';
+  CONTROLS.forEach(c=>{
+    h+=`<div class="ctl"><label id="lbl-${c.k}">${c.l}</label><div class="seg" role="group" aria-labelledby="lbl-${c.k}">`+
+      c.o.map(([v,t])=>`<button type="button" id="c-${c.k}-${v}" data-k="${c.k}" data-v="${v}" aria-pressed="${String(state[c.k])===v}">${t}</button>`).join('')+`</div>`+
+      (c.k==='style'?`<p class="note">${NOTES[state.style]}</p>`:'')+`</div>`;
+  });
+  h+=`<div class="ctl"><label>Oma kuva</label><div class="btnrow"><span class="file btn">Valitse kuva<input id="imgin" type="file" accept="image/*" aria-label="Valitse oma kuva"></span>${state.img?'<button class="btn" type="button" id="imgclr">Takaisin hämähäkkiin</button>':''}</div></div>`;
+  el.innerHTML=h;
+  el.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{state[b.dataset.k]=b.dataset.v==='1'||b.dataset.v==='2'||b.dataset.v==='3'||b.dataset.v==='4'?Number(b.dataset.v):b.dataset.v;apply();});
+  document.getElementById('imgin').onchange=e=>{const f=e.target.files&&e.target.files[0];if(!f)return;if(state.img)URL.revokeObjectURL(state.img);state.img=URL.createObjectURL(f);apply();};
+  const clr=document.getElementById('imgclr');if(clr)clr.onclick=()=>{URL.revokeObjectURL(state.img);state.img=null;apply();};
+}
+
+function apply(){
+  document.body.dataset.style=state.style;
+  const root=document.documentElement;
+  if(state.theme==='system')delete root.dataset.theme;else root.dataset.theme=state.theme;
+  const app=document.getElementById('app');
+  app.dataset.layout=state.layout;app.dataset.cmode=state.cmode;app.dataset.cardb=state.cardb;app.dataset.picb=state.picb;
+  try{const {img,...rest}=state;localStorage.setItem('cs-style',JSON.stringify(rest));}catch(e){}
+  renderControls();renderBoard();renderGallery();
+}
+document.getElementById('winbtn').onclick=()=>{const w=document.getElementById('win');w.classList.remove('on');void w.offsetWidth;w.classList.add('on');};
+window.addEventListener('resize',fit);
+if(window.ResizeObserver)new ResizeObserver(fit).observe(document.getElementById('devicebox'));
+apply();
+})();
+</script>
