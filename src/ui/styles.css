@@ -244,3 +244,6 @@ input[type="text"] { font: inherit; color: var(--fg); background: var(--panel2);
   .win svg.webdraw path { animation: none; stroke-dashoffset: 0; }
   .winmsg { animation: none; }
 }
+.editor .chip { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #f2f3f7; color: #000; font-weight: 800; cursor: pointer;
+  text-shadow: 0 0 2px #fff, 0 0 2px #fff; box-shadow: 0 0 0 1px #000; }
+.editor .btn[aria-pressed="true"] { background: #f2f3f7; color: #05081a; }

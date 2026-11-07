@@ -47,7 +47,22 @@ export async function loadOriginal(file: File): Promise<Blob> {
   const ctx = c.getContext('2d')!;
   ctx.imageSmoothingQuality = 'high';
   ctx.drawImage(src, 0, 0, c.width, c.height);
-  return toBlob(c, 'image/jpeg', 0.9);
+  // Läpinäkyvä kuva tallennetaan PNG:nä, jotta läpinäkyvyys säilyy.
+  const d = ctx.getImageData(0, 0, c.width, c.height).data;
+  let alpha = false;
+  for (let i = 3; i < d.length; i += 16)
+    if (d[i] < 250) {
+      alpha = true;
+      break;
+    }
+  return alpha ? toBlob(c, 'image/png') : toBlob(c, 'image/jpeg', 0.9);
+}
+
+/** Lisää kuvan suoraan ilman editoria: rajaus täyttää kehyksen. */
+export async function quickRecord(file: File, layout: Layout, id: string): Promise<ImageRecord> {
+  const original = await loadOriginal(file);
+  const img = await blobToImage(original);
+  return { id, original, mask: null, edit: coverEdit(img.width, img.height, layout) };
 }
 
 export function coverEdit(imgW: number, imgH: number, layout: Layout): ImageEdit {

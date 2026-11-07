@@ -256,3 +256,17 @@ tiedostossa `design/tyyliluonnos.html`.
   lisäksi pikavalinta "Käytä kaikilla numeroilla".
 - Pystyasennossa kortit ovat pieniä, ja tämä on hyväksytty ratkaisu.
 - Androidin takaisin-painike sulkee avoinna olevan näkymän.
+
+### 13.1 Kuvaeditorin lisäykset
+
+- Galleriasta voi valita useita kuvia kerralla. Ne lisätään suoraan settiin vapaille numeroille,
+  ja kutakin voi muokata myöhemmin.
+- Kierto on oletuksena lukittu, joten kahden sormen zoomaus ei käännä kuvaa. Kierron voi
+  vapauttaa napista. Suorista-nappi palauttaa kuvan vaaka-asentoon niin, että zoomaus ja paikka säilyvät.
+- Tausta-työkalu poistaa taustan värin perusteella:
+  - automaattinen tunnistus kuvan reunoilta (myös kuvaan leivottu läpinäkyvyysruudukko)
+  - värien poiminta napauttamalla, jolloin värejä voi olla useita
+  - herkkyyden säätö
+  - poisto vain reunoihin yhteydessä olevalta alueelta tai kaikkialta
+  - poistetun alueen kohdalla näkyy kortin oma tausta, kuten hämähäkkikuvassa
+- Läpinäkyvät PNG-kuvat säilyttävät läpinäkyvyytensä.

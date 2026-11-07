@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { DEFAULT_SET_ID, type ImageSet, MAX_LIBRARY, uid } from '../store/model';
-import { deleteImage, deleteSet, imageUrl, updateSettings, upsertSet, urlKey, useData } from '../store/store';
+import { quickRecord } from '../images/imaging';
+import { deleteImage, deleteSet, getData, imageUrl, saveImage, updateSettings, upsertSet, urlKey, useData } from '../store/store';
 import { Icon, MiniCard } from './Art';
 import { Page, Seg, Switch } from './Settings';
 
@@ -78,6 +79,7 @@ export function SetEditor({ id, onBack, onEditImage }: { id: string; onBack: () 
   const [sheet, setSheet] = useState<Sheet>(null);
   const [name, setName] = useState(set?.name ?? '');
   const [over, setOver] = useState<number | null>(null);
+  const [busy, setBusy] = useState<string | null>(null);
   const dragFrom = useRef<{ n: number; x: number; y: number; moved: boolean } | null>(null);
 
   useEffect(() => {
@@ -118,11 +120,34 @@ export function SetEditor({ id, onBack, onEditImage }: { id: string; onBack: () 
     save({ map });
   }
 
-  function onFile(e: Event) {
+  async function onFile(e: Event) {
     const input = e.target as HTMLInputElement;
-    const f = input.files?.[0];
+    const files = [...(input.files ?? [])];
     input.value = '';
-    if (f) onEditImage(null, f);
+    if (!files.length) return;
+    if (files.length === 1) return onEditImage(null, files[0]);
+    // Useita kuvia: lisätään suoraan, ja kutakin voi muokata myöhemmin.
+    const room = MAX_LIBRARY - set!.images.length;
+    const take = files.slice(0, room);
+    setBusy(`Lisätään kuvia 0/${take.length}…`);
+    const images = [...set!.images];
+    const map = [...set!.map];
+    let done = 0;
+    for (const f of take) {
+      try {
+        const rec = await quickRecord(f, set!.layout, uid());
+        await saveImage(rec);
+        images.push(rec.id);
+        const free = map.findIndex((m) => m === null);
+        if (free >= 0) map[free] = rec.id;
+      } catch (err) {
+        console.error(err);
+      }
+      setBusy(`Lisätään kuvia ${++done}/${take.length}…`);
+    }
+    upsertSet({ ...getData().sets.find((x) => x.id === set!.id)!, images, map });
+    setBusy(files.length > room ? `Lisättiin ${take.length} kuvaa. Settiin mahtuu enintään ${MAX_LIBRARY} kuvaa.` : null);
+    if (files.length > room) window.setTimeout(() => setBusy(null), 3500);
   }
 
   function duplicate() {
@@ -166,11 +191,16 @@ export function SetEditor({ id, onBack, onEditImage }: { id: string; onBack: () 
                   <br />
                   Lisää kuva
                 </span>
-                <input type="file" accept="image/*" onChange={onFile} aria-label="Lisää kuva galleriasta" />
+                <input type="file" accept="image/*" multiple onChange={onFile} aria-label="Lisää kuvia galleriasta" />
               </label>
             )}
           </div>
-          <p class="hint-text">Napauta kuvaa muokataksesi sitä. Uusi kuva asetetaan ensimmäiselle vapaalle numerolle.</p>
+          {busy && (
+            <p class="hint-text" role="status" style={{ color: 'var(--fg)' }}>
+              {busy}
+            </p>
+          )}
+          <p class="hint-text">Voit valita useita kuvia kerralla. Napauta kuvaa muokataksesi sitä. Uudet kuvat asetetaan vapaille numeroille.</p>
         </section>
       )}
 

@@ -11,11 +11,12 @@ import {
   maskSize,
   toBlob,
 } from '../images/imaging';
+import { type Pixels, type RGB, backgroundAlpha, colorAt, detectBackground } from '../images/background';
 import { type ImageEdit, type ImageRecord, MAX_LIBRARY, uid } from '../store/model';
 import { getImage, saveImage, upsertSet, useData } from '../store/store';
 import { Icon, MiniCard } from './Art';
 
-type Mode = 'move' | 'erase' | 'restore';
+type Mode = 'move' | 'erase' | 'restore' | 'bg';
 type Src = (ImageBitmap | HTMLImageElement) & { width: number; height: number };
 interface Snap {
   edit: ImageEdit;
@@ -42,6 +43,12 @@ export function ImageEditor({ setId, imageId, file, onDone }: { setId: string; i
   const [canRedo, setCanRedo] = useState(false);
   const [viewZoomed, setViewZoomed] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
+  const [rotFree, setRotFree] = useState(false);
+  const [rot, setRot] = useState(0);
+  const [bgColors, setBgColors] = useState<RGB[]>([]);
+  const [bgTol, setBgTol] = useState(0.15);
+  const [bgConnected, setBgConnected] = useState(true);
+  const [bgMsg, setBgMsg] = useState<string | null>(null);
 
   // Muuttuva editoritila refeissä, jotta piirto pysyy nopeana.
   const st = useRef({
@@ -62,6 +69,9 @@ export function ImageEditor({ setId, imageId, file, onDone }: { setId: string; i
     gestureSnap: false,
     raf: 0,
     cursor: null as Pt | null,
+    bgPix: null as Pixels | null,
+    bgBase: null as ImageData | null,
+    tapStart: null as Pt | null,
   });
 
   // ---------- Lataus ----------
@@ -83,6 +93,7 @@ export function ImageEditor({ setId, imageId, file, onDone }: { setId: string; i
         s.edit = rec ? { ...rec.edit } : coverEdit(img.width, img.height, set?.layout ?? 'area');
         if (!alive) return;
         setFeather(s.edit.feather);
+        setRot(s.edit.rot);
         rebuildComp(false);
         setStatus('ready');
       } catch (e) {
@@ -193,7 +204,7 @@ export function ImageEditor({ setId, imageId, file, onDone }: { setId: string; i
     ctx.strokeRect(fx, fy, fw, fh);
     ctx.restore();
     // Siveltimen koko
-    if (s.cursor && mode !== 'move') {
+    if (s.cursor && (mode === 'erase' || mode === 'restore')) {
       ctx.beginPath();
       ctx.arc(s.cursor.x, s.cursor.y, brush / 2, 0, Math.PI * 2);
       ctx.strokeStyle = mode === 'erase' ? 'rgba(255,120,120,.9)' : 'rgba(120,255,190,.9)';
@@ -235,6 +246,9 @@ export function ImageEditor({ setId, imageId, file, onDone }: { setId: string; i
   function restore(snap: Snap) {
     const s = st.current;
     s.edit = { ...snap.edit };
+    setRot(s.edit.rot);
+    s.bgBase = null;
+    setBgColors([]);
     setFeather(s.edit.feather);
     if (snap.mask) {
       s.mask!.getContext('2d')!.putImageData(snap.mask, 0, 0);
@@ -323,6 +337,8 @@ export function ImageEditor({ setId, imageId, file, onDone }: { setId: string; i
     if (s.pointers.size === 1) {
       if (mode === 'move') {
         pushUndo(snapshot(false));
+      } else if (mode === 'bg') {
+        s.tapStart = p;
       } else {
         pushUndo(snapshot(true));
         s.painting = true;
@@ -348,6 +364,15 @@ export function ImageEditor({ setId, imageId, file, onDone }: { setId: string; i
     if (s.pointers.size === 1) {
       if (s.painting) {
         paintTo(p);
+      } else if (mode === 'bg') {
+        // Yhdellä sormella siirretään näkymää; napautus poimii värin.
+        if (s.tapStart && Math.hypot(p.x - s.tapStart.x, p.y - s.tapStart.y) > 6) s.tapStart = null;
+        if (!s.tapStart) {
+          s.vx += p.x - prev.x;
+          s.vy += p.y - prev.y;
+          setViewZoomed(true);
+          schedule();
+        }
       } else if (mode === 'move') {
         const { fw } = frameRect();
         s.edit = { ...s.edit, x: s.edit.x + (p.x - prev.x) / s.vs / fw, y: s.edit.y + (p.y - prev.y) / s.vs / fw };
@@ -368,6 +393,7 @@ export function ImageEditor({ setId, imageId, file, onDone }: { setId: string; i
       const mp = { x: (p1.x + other.x) / 2, y: (p1.y + other.y) / 2 };
       const mq = { x: (q1.x + other.x) / 2, y: (q1.y + other.y) / 2 };
       const { cw, ch, fw } = frameRect();
+      let th = 0;
       if (mode === 'move') {
         // Kuvan siirto, zoomaus ja kierto kehyksen sisällä.
         const a = toScene(mp);
@@ -375,11 +401,13 @@ export function ImageEditor({ setId, imageId, file, onDone }: { setId: string; i
         const C = { x: s.edit.x * fw, y: s.edit.y * fw };
         const dx = C.x - a.x;
         const dy = C.y - a.y;
-        const cs = Math.cos(dth);
-        const sn = Math.sin(dth);
+        // Kierto vain, jos se on vapautettu; muuten zoomaus ei käännä kuvaa vahingossa.
+        th = rotFree ? dth : 0;
+        const cs = Math.cos(th);
+        const sn = Math.sin(th);
         const nx = b.x + f * (dx * cs - dy * sn);
         const ny = b.y + f * (dx * sn + dy * cs);
-        s.edit = { ...s.edit, x: nx / fw, y: ny / fw, scale: Math.max(0.05, Math.min(40, s.edit.scale * f)), rot: s.edit.rot + dth };
+        s.edit = { ...s.edit, x: nx / fw, y: ny / fw, scale: Math.max(0.05, Math.min(40, s.edit.scale * f)), rot: s.edit.rot + th };
       } else {
         // Näkymän lähennys tarkkaa pyyhkimistä varten.
         const ns = Math.max(0.5, Math.min(12, s.vs * f));
@@ -390,6 +418,8 @@ export function ImageEditor({ setId, imageId, file, onDone }: { setId: string; i
         setViewZoomed(Math.abs(ns - 1) > 0.01 || Math.abs(s.vx) > 1 || Math.abs(s.vy) > 1);
       }
       s.pointers.set(e.pointerId, p);
+      s.tapStart = null;
+      if (th !== 0) setRot(s.edit.rot);
       schedule();
     }
   }
@@ -398,6 +428,10 @@ export function ImageEditor({ setId, imageId, file, onDone }: { setId: string; i
     const s = st.current;
     s.pointers.delete(e.pointerId);
     if (e.pointerType !== 'mouse') s.cursor = null;
+    if (mode === 'bg' && s.tapStart && s.pointers.size === 0) {
+      pickColor(s.tapStart);
+      s.tapStart = null;
+    }
     if (s.painting && s.pointers.size === 0) {
       s.painting = false;
       s.last = null;
@@ -424,8 +458,79 @@ export function ImageEditor({ setId, imageId, file, onDone }: { setId: string; i
     const s = st.current;
     pushUndo(snapshot(false));
     s.edit = { ...s.edit, rot: s.edit.rot + d };
+    setRot(s.edit.rot);
     schedule();
     queuePreview();
+  }
+  /** Palauttaa kuvan suoraan vaaka-asentoon. Zoomaus ja paikka säilyvät. */
+  function straighten() {
+    const s = st.current;
+    pushUndo(snapshot(false));
+    s.edit = { ...s.edit, rot: 0 };
+    setRot(0);
+    schedule();
+    queuePreview();
+  }
+
+  // ---------- Taustan poisto ----------
+  function bgPixels(): Pixels {
+    const s = st.current;
+    if (!s.bgPix) {
+      const c = canvas(s.mask!.width, s.mask!.height);
+      const ctx = c.getContext('2d')!;
+      ctx.drawImage(s.img!, 0, 0, c.width, c.height);
+      s.bgPix = ctx.getImageData(0, 0, c.width, c.height);
+    }
+    return s.bgPix;
+  }
+  function pickColor(p: Pt) {
+    const m = sceneToMask(toScene(p));
+    const px = bgPixels();
+    if (m.x < 0 || m.y < 0 || m.x >= px.width || m.y >= px.height) return;
+    const c = colorAt(px, m.x, m.y);
+    setBgMsg(null);
+    setBgColors((cs) => (cs.some((x) => Math.abs(x[0] - c[0]) + Math.abs(x[1] - c[1]) + Math.abs(x[2] - c[2]) < 12) ? cs : [...cs, c]));
+  }
+  function autoDetect() {
+    const r = detectBackground(bgPixels());
+    if (!r.colors.length) {
+      setBgMsg(r.transparent ? 'Kuvan tausta on jo läpinäkyvä.' : 'Selkeää taustaväriä ei löytynyt. Napauta taustaa valitaksesi värin.');
+      return;
+    }
+    setBgMsg(r.transparent ? 'Kuvassa on jo läpinäkyvää taustaa. Lisäksi löytyi värejä.' : null);
+    setBgColors(r.colors);
+  }
+  function applyBg() {
+    const s = st.current;
+    if (!s.mask || !s.img) return;
+    if (!s.bgBase) {
+      if (!bgColors.length) return;
+      pushUndo(snapshot(true));
+      s.bgBase = s.mask.getContext('2d')!.getImageData(0, 0, s.mask.width, s.mask.height);
+    }
+    const base = s.bgBase;
+    const alpha = backgroundAlpha(bgPixels(), bgColors, bgTol, bgConnected);
+    const out = new ImageData(new Uint8ClampedArray(base.data), base.width, base.height);
+    for (let i = 0; i < alpha.length; i++) {
+      const j = i * 4;
+      out.data[j] = out.data[j + 1] = out.data[j + 2] = 255;
+      out.data[j + 3] = Math.min(base.data[j + 3], alpha[i]);
+    }
+    s.mask.getContext('2d')!.putImageData(out, 0, 0);
+    s.maskTouched = true;
+    rebuildComp();
+    queuePreview();
+  }
+  useEffect(() => {
+    if (status === 'ready' && mode === 'bg') applyBg();
+  }, [bgColors, bgTol, bgConnected]);
+  function changeMode(m: Mode) {
+    if (mode === 'bg' && m !== 'bg') {
+      st.current.bgBase = null;
+      setBgColors([]);
+      setBgMsg(null);
+    }
+    setMode(m);
   }
   function fitView() {
     const s = st.current;
@@ -439,6 +544,9 @@ export function ImageEditor({ setId, imageId, file, onDone }: { setId: string; i
     const s = st.current;
     pushUndo(snapshot(true));
     s.edit = { ...coverEdit(s.img!.width, s.img!.height, set?.layout ?? 'area'), feather: s.edit.feather };
+    setRot(0);
+    s.bgBase = null;
+    setBgColors([]);
     const ctx = s.mask!.getContext('2d')!;
     ctx.globalCompositeOperation = 'source-over';
     ctx.fillStyle = '#fff';
@@ -544,23 +652,64 @@ export function ImageEditor({ setId, imageId, file, onDone }: { setId: string; i
         <div class="seg" role="group" aria-label="Työkalu">
           {(
             [
-              ['move', 'Siirrä ja rajaa'],
+              ['move', 'Siirrä'],
               ['erase', 'Pyyhi'],
               ['restore', 'Palauta'],
+              ['bg', 'Tausta'],
             ] as [Mode, string][]
           ).map(([m, t]) => (
-            <button key={m} type="button" aria-pressed={mode === m} onClick={() => setMode(m)}>
+            <button key={m} type="button" aria-pressed={mode === m} onClick={() => changeMode(m)}>
               {t}
             </button>
           ))}
         </div>
         <div style={{ fontSize: '13px', color: '#aab' }}>
           {mode === 'move'
-            ? 'Siirrä kuvaa yhdellä sormella. Zoomaa ja kierrä kahdella sormella.'
-            : 'Sivele yhdellä sormella. Lähennä näkymää kahdella sormella tarkempaa jälkeä varten.'}
+            ? rotFree
+              ? 'Siirrä kuvaa yhdellä sormella. Zoomaa ja kierrä kahdella sormella.'
+              : 'Siirrä kuvaa yhdellä sormella. Zoomaa kahdella sormella. Kierto on lukittu.'
+            : mode === 'bg'
+              ? 'Napauta taustaa poistaaksesi sen värin, tai käytä tunnistusta. Voit valita useita värejä.'
+              : 'Sivele yhdellä sormella. Lähennä näkymää kahdella sormella tarkempaa jälkeä varten.'}
         </div>
+        {mode === 'bg' && (
+          <>
+            <div class="toolrow">
+              <button class="btn small" type="button" onClick={autoDetect}>
+                Tunnista tausta
+              </button>
+              {bgColors.map((c, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  class="chip"
+                  aria-label="Poista väri"
+                  onClick={() => setBgColors((cs) => cs.filter((_, j) => j !== i))}
+                  style={{ background: `rgb(${c[0]},${c[1]},${c[2]})` }}
+                >
+                  ×
+                </button>
+              ))}
+            </div>
+            {bgMsg && <div style={{ fontSize: '13px', color: '#ffd28a' }}>{bgMsg}</div>}
+            <div class="seg" role="group" aria-label="Poistoalue">
+              <button type="button" aria-pressed={bgConnected} onClick={() => setBgConnected(true)}>
+                Vain reunoilta
+              </button>
+              <button type="button" aria-pressed={!bgConnected} onClick={() => setBgConnected(false)}>
+                Kaikkialta
+              </button>
+            </div>
+          </>
+        )}
         <div class="sliders">
-          {mode !== 'move' && (
+          {mode === 'bg' && (
+            <>
+              <label for="tol">Herkkyys</label>
+              <input id="tol" type="range" min={0} max={1} step={0.02} value={bgTol} onInput={(e) => setBgTol(Number((e.target as HTMLInputElement).value))} />
+            </>
+          )}
+          {(mode === 'erase' || mode === 'restore') && (
             <>
               <label for="brush">Sivellin</label>
               <input id="brush" type="range" min={6} max={90} value={brush} onInput={(e) => setBrush(Number((e.target as HTMLInputElement).value))} />
@@ -585,6 +734,14 @@ export function ImageEditor({ setId, imageId, file, onDone }: { setId: string; i
           <button class="iconbtn" type="button" aria-label="Kierrä oikealle" onClick={() => rotate(Math.PI / 2)}>
             <Icon name="rotr" />
           </button>
+          <button class="btn small" type="button" aria-pressed={rotFree} onClick={() => setRotFree((v) => !v)}>
+            {rotFree ? 'Kierto: vapaa' : 'Kierto: lukittu'}
+          </button>
+          {Math.abs(Math.atan2(Math.sin(rot), Math.cos(rot))) > 0.001 && (
+            <button class="btn small" type="button" onClick={straighten}>
+              Suorista
+            </button>
+          )}
           {viewZoomed && (
             <button class="btn small" type="button" onClick={fitView}>
               Sovita näkymä
