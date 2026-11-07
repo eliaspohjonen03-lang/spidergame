@@ -102,7 +102,8 @@ Pakassa on aina 8 jonoa, ja ne jaetaan sarjoille näin:
   - *Koko kortti:* kuva peittää koko kortin, ja numero on kuvan päällä.
     Numeron luettavuus varmistetaan esimerkiksi pienellä taustalaatalla tai varjolla.
   - *Kuva-alue:* kuvalla on oma alueensa numeron alapuolella.
-- **Rajat:** kortin reunaviivan ja kuva-alueen reunan voi piilottaa erikseen.
+- **Rajat:** viivan kortin ulkoreunassa ja laatikon kuvan ympärillä voi piilottaa erikseen.
+  Kuvan ympärillä oleva laatikko on oletuksena piilossa.
 - **Selkäpuoli:** oma rauhallinen kuvio, esimerkiksi hämähäkinverkko. Se ei saa näyttää
   pelikortin selkämykseltä.
 
@@ -226,6 +227,10 @@ Ilme suunnitellaan artefaktina ennen toteutusta. Artefaktissa on 2–3 tyylivaih
 - selkäpuolen kuvio ja oletushämähäkki
 - neljä oletusväriä sarjoille
 - ehdotuksia voittoanimaatioksi ja jonon valmistumisen animaatioksi
+
+**Päätetty:** voittoanimaatio vaihtelee. Jokaisen voiton jälkeen näytetään satunnaisesti
+yksi vaihtoehdoista: verkko kutoutuu tai kastepisarat syttyvät. Tyyliluonnos on
+tiedostossa `design/tyyliluonnos.html`.
 
 ## 12. Rajattu pois (mahdollisia myöhempiä lisäyksiä)
 

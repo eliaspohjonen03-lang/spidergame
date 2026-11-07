@@ -220,7 +220,7 @@ body[data-style="muste"] .winmsg h3{font-weight:400}
   </defs>
 </svg>
 
-<div class="wrap" id="app" data-layout="area" data-cmode="num" data-cardb="true" data-picb="true">
+<div class="wrap" id="app" data-layout="area" data-cmode="num" data-cardb="true" data-picb="false">
   <header>
     <h1>Custom Spider</h1>
     <p>Kolme tyylisuuntaa pelille. Vaihda tyyliä, teemaa ja asentoa oikealta, ja kokeile, miten sarjan väri ja kuvan asettelu toimivat. Voit myös ladata oman kuvan kortteihin nähdäksesi, miltä se näyttää pöydällä.</p>
@@ -245,7 +245,7 @@ body[data-style="muste"] .winmsg h3{font-weight:400}
 
   <section>
     <h2>Animaatioehdotukset</h2>
-    <p class="lead">Voittoanimaatiota voi kokeilla yllä olevalla napilla. Muut ehdotukset on kuvattu tässä, ja ne toteutetaan valitun tyylin mukaisesti.</p>
+    <p class="lead">Voittoanimaatiota voi kokeilla yllä olevalla napilla. Pelissä voittoanimaatio vaihtelee: jokaisen voiton jälkeen näytetään satunnaisesti yksi vaihtoehdoista.</p>
     <div class="ideas">
       <div class="idea"><h3>Voitto: verkko kutoutuu</h3><p>Pöydän ylle piirtyy hämähäkinverkko säikeittäin keskeltä ulospäin. Sen jälkeen esiin nousee tulosikkuna, jossa ovat kahdeksan valmista jonoa. Tämä on demossa.</p></div>
       <div class="idea"><h3>Voitto: kastepisarat</h3><p>Valmiit jonot liukuvat yksitellen keskelle, ja jokaisen kohdalla verkon säikeelle syttyy hohtava pisara. Kun kahdeksas pisara syttyy, verkko välähtää kerran.</p></div>
@@ -268,8 +268,8 @@ body[data-style="muste"] .winmsg h3{font-weight:400}
 
 <script>
 (function(){
-const state={style:'kaste',theme:'system',orient:'pysty',suits:4,cmode:'num',layout:'area',cardb:'true',picb:'true',img:null};
-try{const s=JSON.parse(localStorage.getItem('cs-style')||'null');if(s){Object.assign(state,s);state.img=null;}}catch(e){}
+const state={style:'kaste',theme:'system',orient:'pysty',suits:4,cmode:'num',layout:'area',cardb:'true',picb:'false',img:null};
+try{const s=JSON.parse(localStorage.getItem('cs-style2')||'null');if(s){Object.assign(state,s);state.img=null;}}catch(e){}
 
 const NOTES={
   kaste:'Aamukaste: sammaleenvihreä metsänpohja, pehmeät pyöreät laatat ja kastepisarat verkossa. Leppoisa ja lämmin.',
@@ -283,8 +283,8 @@ const CONTROLS=[
   {k:'suits',l:'Sarjoja (vaikeus)',o:[['1','1'],['2','2'],['3','3'],['4','4']]},
   {k:'cmode',l:'Sarjan väri näkyy',o:[['num','Numerossa'],['kehys','+ kehyksessä'],['tausta','+ taustassa']]},
   {k:'layout',l:'Kuvan asettelu',o:[['area','Kuva-alue'],['full','Koko kortti']]},
-  {k:'cardb',l:'Kortin reuna',o:[['true','Näkyy'],['false','Piilossa']]},
-  {k:'picb',l:'Kuva-alueen reuna',o:[['true','Näkyy'],['false','Piilossa']]}
+  {k:'cardb',l:'Viiva kortin ulkoreunassa',o:[['true','Näkyy'],['false','Piilossa']]},
+  {k:'picb',l:'Laatikko kuvan ympärillä',o:[['true','Näkyy'],['false','Piilossa']]}
 ];
 
 // Hämähäkinverkko: säteet + kaartuvat renkaat
@@ -450,7 +450,7 @@ function apply(){
   if(state.theme==='system')delete root.dataset.theme;else root.dataset.theme=state.theme;
   const app=document.getElementById('app');
   app.dataset.layout=state.layout;app.dataset.cmode=state.cmode;app.dataset.cardb=state.cardb;app.dataset.picb=state.picb;
-  try{const {img,...rest}=state;localStorage.setItem('cs-style',JSON.stringify(rest));}catch(e){}
+  try{const {img,...rest}=state;localStorage.setItem('cs-style2',JSON.stringify(rest));}catch(e){}
   renderControls();renderBoard();renderGallery();
 }
 document.getElementById('winbtn').onclick=()=>{const w=document.getElementById('win');w.classList.remove('on');void w.offsetWidth;w.classList.add('on');};
