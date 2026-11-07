@@ -71,7 +71,7 @@ function Thumb({ id, set, onClick, selected }: { id: string; set: ImageSet; onCl
   );
 }
 
-type Sheet = null | { kind: 'slot'; n: number } | { kind: 'image'; id: string } | { kind: 'delete' } | { kind: 'rename' };
+type Sheet = null | { kind: 'slot'; n: number } | { kind: 'image'; id: string } | { kind: 'delete' };
 
 export function SetEditor({ id, onBack, onEditImage }: { id: string; onBack: () => void; onEditImage: (imageId: string | null, file?: File) => void }) {
   const { sets, settings, urls } = useData();
@@ -159,6 +159,27 @@ export function SetEditor({ id, onBack, onEditImage }: { id: string; onBack: () 
   return (
     <Page
       title={set.name}
+      titleEl={
+        isDefault ? undefined : (
+          <label class="titleedit">
+            <input
+              id="setname"
+              type="text"
+              value={name}
+              maxLength={40}
+              aria-label="Kuvasetin nimi"
+              onInput={(e) => setName((e.target as HTMLInputElement).value)}
+              onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
+              onBlur={() => {
+                const v = name.trim();
+                if (v && v !== set.name) save({ name: v });
+                else setName(set.name);
+              }}
+            />
+            <Icon name="edit" />
+          </label>
+        )
+      }
       onBack={onBack}
       actions={
         settings.activeSet === set.id ? null : (
@@ -244,11 +265,6 @@ export function SetEditor({ id, onBack, onEditImage }: { id: string; onBack: () 
       <section class="section">
         <h2>Setti</h2>
         <div class="row" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-          {!isDefault && (
-            <button class="btn" type="button" onClick={() => (setName(set.name), setSheet({ kind: 'rename' }))}>
-              <Icon name="edit" /> Nimeä uudelleen
-            </button>
-          )}
           <button class="btn" type="button" onClick={duplicate}>
             Monista
           </button>
@@ -347,27 +363,6 @@ export function SetEditor({ id, onBack, onEditImage }: { id: string; onBack: () 
                   </button>
                 </div>
               </>
-            )}
-            {sheet.kind === 'rename' && (
-              <form
-                style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  if (name.trim()) save({ name: name.trim() });
-                  setSheet(null);
-                }}
-              >
-                <h2>Nimeä uudelleen</h2>
-                <input id="setname" type="text" value={name} maxLength={40} onInput={(e) => setName((e.target as HTMLInputElement).value)} autoFocus />
-                <div class="row">
-                  <button class="btn" type="button" onClick={() => setSheet(null)}>
-                    Peruuta
-                  </button>
-                  <button class="btn primary" type="submit">
-                    Tallenna
-                  </button>
-                </div>
-              </form>
             )}
             {sheet.kind === 'delete' && (
               <>

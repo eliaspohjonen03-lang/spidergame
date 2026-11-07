@@ -247,3 +247,11 @@ input[type="text"] { font: inherit; color: var(--fg); background: var(--panel2);
 .editor .chip { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #f2f3f7; color: #000; font-weight: 800; cursor: pointer;
   text-shadow: 0 0 2px #fff, 0 0 2px #fff; box-shadow: 0 0 0 1px #000; }
 .editor .btn[aria-pressed="true"] { background: #f2f3f7; color: #05081a; }
+.titleedit { flex: 1; min-width: 0; display: flex; align-items: center; gap: 6px; cursor: text; color: var(--muted); }
+.titleedit input { flex: 1; min-width: 0; font-family: var(--fdisp); font-weight: 600; font-size: 20px; color: var(--fg);
+  background: transparent; border: 0; border-bottom: 1.5px dashed transparent; border-radius: 0; padding: 4px 0; width: 100%; }
+:root[data-style="muste"] .titleedit input { font-weight: 400; }
+.titleedit input:hover, .titleedit input:focus { border-bottom-color: var(--line); outline: none; }
+.titleedit input:focus { border-bottom-color: var(--accent); }
+.titleedit:focus-within svg { color: var(--accent); }
+.titleedit svg { flex: none; }

@@ -5,14 +5,14 @@ import { activeSet, updateSettings, useData } from '../store/store';
 import { Icon, MiniCard } from './Art';
 import { STYLES, STYLE_COLORS, resolveMode, suitColors } from './theme';
 
-export function Page(props: { title: string; onBack: () => void; children: ComponentChildren; actions?: ComponentChildren }) {
+export function Page(props: { title: string; titleEl?: ComponentChildren; onBack: () => void; children: ComponentChildren; actions?: ComponentChildren }) {
   return (
     <div class="page">
       <header>
         <button class="iconbtn" type="button" aria-label="Takaisin" onClick={props.onBack}>
           <Icon name="back" />
         </button>
-        <h1>{props.title}</h1>
+        {props.titleEl ?? <h1>{props.title}</h1>}
         {props.actions}
       </header>
       <div class="content">{props.children}</div>
