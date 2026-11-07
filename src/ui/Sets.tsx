@@ -81,6 +81,7 @@ export function SetEditor({ id, onBack, onEditImage }: { id: string; onBack: () 
   const [over, setOver] = useState<number | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const dragFrom = useRef<{ n: number; x: number; y: number; moved: boolean } | null>(null);
+  const suppressClick = useRef(false);
 
   useEffect(() => {
     if (!set) onBack();
@@ -107,10 +108,11 @@ export function SetEditor({ id, onBack, onEditImage }: { id: string; onBack: () 
     dragFrom.current = null;
     setOver(null);
     if (!d) return;
-    if (!d.moved) {
-      if (!isDefault) setSheet({ kind: 'slot', n: d.n });
-      return;
-    }
+    // Napautus käsitellään click-tapahtumassa. Jos ikkuna avattaisiin jo tässä,
+    // kosketusta seuraava klikkaus osuisi ikkunan taustaan ja sulkisi sen heti.
+    if (!d.moved) return;
+    suppressClick.current = true;
+    window.setTimeout(() => (suppressClick.current = false), 400);
     const el = document.elementFromPoint(e.clientX, e.clientY)?.closest('[data-slot]') as HTMLElement | null;
     if (!el) return;
     const to = Number(el.dataset.slot);
@@ -229,7 +231,7 @@ export function SetEditor({ id, onBack, onEditImage }: { id: string; onBack: () 
         <h2>Numerot</h2>
         <div class="slots" onPointerMove={slotMove} onPointerUp={slotUp} onPointerCancel={() => ((dragFrom.current = null), setOver(null))}>
           {set.map.map((_, n) => (
-            <div key={n} data-slot={n} class={'slotbtn' + (over === n ? ' over' : '')} role="button" tabIndex={0} aria-label={`Numero ${n + 1}`} onPointerDown={(e) => slotDown(e, n)} onKeyDown={(e) => e.key === 'Enter' && !isDefault && setSheet({ kind: 'slot', n })}>
+            <div key={n} data-slot={n} class={'slotbtn' + (over === n ? ' over' : '')} role="button" tabIndex={0} aria-label={`Numero ${n + 1}`} onPointerDown={(e) => slotDown(e, n)} onClick={() => !suppressClick.current && !isDefault && setSheet({ kind: 'slot', n })} onKeyDown={(e) => e.key === 'Enter' && !isDefault && setSheet({ kind: 'slot', n })}>
               <MiniCard rank={n + 1} suit={0} w={60} set={set} urls={urls} />
             </div>
           ))}
