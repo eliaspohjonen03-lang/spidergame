@@ -345,9 +345,16 @@ export function ImageEditor({ setId, imageId, file, onDone }: { setId: string; i
         s.last = null;
         paintTo(p);
       }
-    } else if (s.pointers.size === 2 && s.painting) {
-      // Toinen sormi: lopetetaan sivellys ja siirrytään näkymän lähennykseen.
+    } else if (s.pointers.size >= 2 && s.painting) {
+      // Toinen sormi: kyseessä on zoomaus, ei sivellys. Perutaan ensimmäisen sormen
+      // jo tekemä jälki palauttamalla maski siveltämistä edeltäneeseen tilaan.
       s.painting = false;
+      s.last = null;
+      const snap = s.undo.pop();
+      if (snap?.mask) {
+        s.mask!.getContext('2d')!.putImageData(snap.mask, 0, 0);
+      }
+      setCanUndo(s.undo.length > 0);
       rebuildComp();
     }
   }
