@@ -15,4 +15,21 @@ import { registerSW } from 'virtual:pwa-register';
 import { App } from './ui/App';
 
 registerSW({ immediate: true });
+
+// Estetään selaimen zoomaus (iPhonen nipistys ja tuplanapautus), jotta pelinäkymä
+// ei suurennu vahingossa esimerkiksi jakopakkaa nopeasti napautettaessa.
+for (const t of ['gesturestart', 'gesturechange', 'gestureend']) document.addEventListener(t, (e) => e.preventDefault());
+let lastTouchEnd = 0;
+document.addEventListener(
+  'touchend',
+  (e) => {
+    const now = Date.now();
+    const target = e.target as Element | null;
+    const interactive = target?.closest('button, input, label, a, select, textarea, [role="button"]');
+    if (now - lastTouchEnd < 350 && !interactive) e.preventDefault();
+    lastTouchEnd = now;
+  },
+  { passive: false },
+);
+document.addEventListener('touchmove', (e) => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
 render(<App />, document.getElementById('app')!);
