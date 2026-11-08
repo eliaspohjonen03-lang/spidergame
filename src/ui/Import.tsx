@@ -49,30 +49,7 @@ export function ImportPage({ onBack, onFile }: { onBack: () => void; onFile: (f:
       {platform === 'android' ? (
         <div class="install">
           <section class="section">
-            <h2>WhatsApp, suoraan peliin</h2>
-            <ol>
-              <li>
-                <span>Avaa keskustelu, jossa tiedosto on, ja paina tiedostoa pitkään.</span>
-              </li>
-              <li>
-                <span>
-                  Napauta ylhäältä jakopainiketta <Kbd icon="share">Jaa</Kbd>.
-                </span>
-              </li>
-              <li>
-                <span>
-                  Valitse sovelluslistasta <b>Custom Spider</b>. Peli aukeaa ja kysyy, tuodaanko setti.
-                </span>
-              </li>
-            </ol>
-            <p class="hint-text">
-              {isStandalone()
-                ? 'Jos Custom Spider ei näy listassa, käytä alla olevaa tapaa. Peli ilmestyy jakovalikkoon joskus vasta viiveellä tai kun sen asentaa uudelleen.'
-                : 'Tämä toimii vain, kun peli on asennettu aloitusnäytölle. Ohje löytyy asetuksista kohdasta Asennusohje.'}
-            </p>
-          </section>
-          <section class="section">
-            <h2>WhatsApp, tiedoston kautta</h2>
+            <h2>WhatsApp</h2>
             <ol>
               <li>
                 <span>Avaa tiedosto WhatsAppissa, jolloin se tallentuu puhelimeen.</span>
@@ -96,6 +73,29 @@ export function ImportPage({ onBack, onFile }: { onBack: () => void; onFile: (f:
                 </span>
               </li>
             </ol>
+          </section>
+          <section class="section">
+            <h2>Vaihtoehto: suoraan WhatsAppista peliin</h2>
+            <ol>
+              <li>
+                <span>Avaa keskustelu, jossa tiedosto on, ja paina tiedostoa pitkään.</span>
+              </li>
+              <li>
+                <span>
+                  Napauta ylhäältä jakopainiketta <Kbd icon="share">Jaa</Kbd>.
+                </span>
+              </li>
+              <li>
+                <span>
+                  Valitse sovelluslistasta <b>Custom Spider</b>. Peli aukeaa ja kysyy, tuodaanko setti.
+                </span>
+              </li>
+            </ol>
+            <p class="hint-text">
+              {isStandalone()
+                ? 'Tämä ei toimi kaikissa puhelimissa. Jos Custom Spider ei näy listassa, käytä yllä olevaa tapaa.'
+                : 'Tämä toimii vain, kun peli on asennettu aloitusnäytölle. Ohje löytyy asetuksista kohdasta Asennusohje.'}
+            </p>
           </section>
         </div>
       ) : (
