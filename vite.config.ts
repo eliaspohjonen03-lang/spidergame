@@ -25,7 +25,7 @@ export default defineConfig({
           action: './?share-target',
           method: 'POST',
           enctype: 'multipart/form-data',
-          params: { files: [{ name: 'file', accept: ['application/json', '.json', 'text/plain', 'application/octet-stream'] }] },
+          params: { files: [{ name: 'file', accept: ['text/plain', '.txt', 'application/json', '.json', 'application/octet-stream'] }] },
         },
         icons: [
           { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },

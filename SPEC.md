@@ -280,9 +280,9 @@ tiedostossa `design/tyyliluonnos.html`.
 
 ### 13.3 Kuvasettien jakaminen ja varmuuskopio
 
-- **Jaa setti** (setin sivulla) pakkaa yhden setin tiedostoksi `Custom Spider - <nimi>.json`: kuvat
+- **Jaa setti** (setin sivulla) pakkaa yhden setin tekstitiedostoksi `Custom Spider - <nimi>.txt` (Androidin Chrome ei salli .json-tiedostojen jakamista): kuvat
   täydessä laadussa, maskit, rajaukset, numerokartoitus, asettelu ja reunat. Tiedosto jaetaan
-  puhelimen jakovalikolla. Jos jakaminen ei onnistu, tiedosto tallentuu puhelimen latauksiin.
+  puhelimen jakovalikolla. Jos selain ei osaa jakaa tiedostoja, peli tarjoaa Tallenna tiedosto -napin.
 - **Tuo setti** (kuvasettilistassa) avaa näkymän, jossa on ohjeet Androidille ja iPhonelle
   (WhatsApp, sähköposti, muut sovellukset) ja Valitse tiedosto -nappi.
 - Androidilla asennettu peli näkyy jakovalikossa (Web Share Target), joten WhatsAppista voi jakaa

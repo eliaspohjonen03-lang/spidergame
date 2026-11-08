@@ -33,7 +33,7 @@ export function ImportPage({ onBack, onFile }: { onBack: () => void; onFile: (f:
       </p>
       <label class="btn primary file" style={{ alignSelf: 'flex-start' }}>
         <Icon name="plus" /> Valitse tiedosto
-        <input type="file" accept=".json,application/json,text/plain,application/octet-stream" onChange={pick} aria-label="Valitse kuvasettitiedosto" />
+        <input type="file" accept=".txt,text/plain,.json,application/json,application/octet-stream" onChange={pick} aria-label="Valitse kuvasettitiedosto" />
       </label>
 
       <Seg<Platform>

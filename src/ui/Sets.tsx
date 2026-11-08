@@ -1,26 +1,14 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { DEFAULT_SET_ID, type ImageSet, MAX_LIBRARY, uid } from '../store/model';
 import { quickRecord } from '../images/imaging';
-import { exportAllFile, exportSetFile, shareOrDownload } from '../store/transfer';
+import { downloadFile, exportAllFile, exportSetFile, shareFile } from '../store/transfer';
 import { deleteImage, deleteSet, getData, imageUrl, saveImage, updateSettings, upsertSet, urlKey, useData } from '../store/store';
 import { Icon, MiniCard } from './Art';
 import { Page, Seg, Switch } from './Settings';
 
 export function SetsPage({ onBack, onOpen, onImport }: { onBack: () => void; onOpen: (id: string) => void; onImport: () => void }) {
   const { sets, settings, urls } = useData();
-  const [busy, setBusy] = useState<string | null>(null);
   const ownSets = sets.filter((s) => s.id !== DEFAULT_SET_ID);
-  async function backup() {
-    setBusy('Kootaan varmuuskopiota…');
-    try {
-      const file = await exportAllFile();
-      const r = await shareOrDownload(file, 'Custom Spider -varmuuskopio');
-      setBusy(r === 'downloaded' ? 'Varmuuskopio tallennettiin puhelimen latauksiin.' : null);
-    } catch (e) {
-      console.error(e);
-      setBusy('Varmuuskopion tekeminen epäonnistui.');
-    }
-  }
   function create() {
     const s: ImageSet = {
       id: uid(),
@@ -74,16 +62,7 @@ export function SetsPage({ onBack, onOpen, onImport }: { onBack: () => void; onO
       <section class="section">
         <h2>Varmuuskopio</h2>
         <p class="hint-text">Tallentaa kaikki omat kuvasetit yhteen tiedostoon esimerkiksi puhelimen vaihtoa varten. Tiedoston voi palauttaa kohdasta Tuo setti.</p>
-        <div>
-          <button class="btn" type="button" onClick={backup} disabled={!ownSets.length}>
-            <Icon name="share" /> Vie kaikki setit
-          </button>
-        </div>
-        {busy && (
-          <p class="hint-text" role="status" style={{ color: 'var(--fg)' }}>
-            {busy}
-          </p>
-        )}
+        <ShareFlow label="Vie kaikki setit" title="Custom Spider -varmuuskopio" make={exportAllFile} disabled={!ownSets.length} />
       </section>
     </Page>
   );
@@ -111,7 +90,6 @@ export function SetEditor({ id, onBack, onEditImage }: { id: string; onBack: () 
   const [name, setName] = useState(set?.name ?? '');
   const [over, setOver] = useState<number | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
-  const [sharing, setSharing] = useState<string | null>(null);
   const dragFrom = useRef<{ n: number; x: number; y: number; moved: boolean } | null>(null);
   const suppressClick = useRef(false);
 
@@ -182,18 +160,6 @@ export function SetEditor({ id, onBack, onEditImage }: { id: string; onBack: () 
     upsertSet({ ...getData().sets.find((x) => x.id === set!.id)!, images, map });
     setBusy(files.length > room ? `Lisättiin ${take.length} kuvaa. Settiin mahtuu enintään ${MAX_LIBRARY} kuvaa.` : null);
     if (files.length > room) window.setTimeout(() => setBusy(null), 3500);
-  }
-
-  async function shareSet() {
-    setSharing('Kootaan tiedostoa…');
-    try {
-      const file = await exportSetFile(set!.id);
-      const r = await shareOrDownload(file, set!.name);
-      setSharing(r === 'downloaded' ? 'Tiedosto tallennettiin puhelimen latauksiin. Lähetä se sieltä esimerkiksi WhatsAppilla.' : null);
-    } catch (e) {
-      console.error(e);
-      setSharing('Jakaminen epäonnistui.');
-    }
   }
 
   function duplicate() {
@@ -310,12 +276,13 @@ export function SetEditor({ id, onBack, onEditImage }: { id: string; onBack: () 
 
       <section class="section">
         <h2>Setti</h2>
+        {!isDefault && (
+          <>
+            <ShareFlow label="Jaa setti" title={set.name} primary make={() => exportSetFile(set.id)} />
+            <p class="hint-text">Jaa setti perheenjäsenelle esimerkiksi WhatsAppilla. Kuvat kulkevat vain lähettämässäsi viestissä.</p>
+          </>
+        )}
         <div class="row" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-          {!isDefault && (
-            <button class="btn primary" type="button" onClick={shareSet} disabled={!!sharing && sharing.startsWith('Kootaan')}>
-              <Icon name="share" /> Jaa setti
-            </button>
-          )}
           <button class="btn" type="button" onClick={duplicate}>
             Monista
           </button>
@@ -325,12 +292,6 @@ export function SetEditor({ id, onBack, onEditImage }: { id: string; onBack: () 
             </button>
           )}
         </div>
-        {sharing && (
-          <p class="hint-text" role="status" style={{ color: 'var(--fg)' }}>
-            {sharing}
-          </p>
-        )}
-        {!isDefault && <p class="hint-text">Jaa setti perheenjäsenelle esimerkiksi WhatsAppilla. Kuvat kulkevat vain lähettämässäsi viestissä.</p>}
       </section>
 
       {sheet && (
@@ -447,5 +408,56 @@ export function SetEditor({ id, onBack, onEditImage }: { id: string; onBack: () 
         </div>
       )}
     </Page>
+  );
+}
+
+type ShareState = 'idle' | 'busy' | 'needs-tap' | 'unsupported' | 'error';
+
+/** Jakonappi: kokoaa tiedoston ja avaa puhelimen jakovalikon. */
+function ShareFlow(props: { label: string; title: string; make: () => Promise<File>; primary?: boolean; disabled?: boolean }) {
+  const [state, setState] = useState<ShareState>('idle');
+  const [file, setFile] = useState<File | null>(null);
+  async function share(ready?: File) {
+    try {
+      let f = ready;
+      if (!f) {
+        setState('busy');
+        f = await props.make();
+        setFile(f);
+      }
+      const r = await shareFile(f, props.title);
+      setState(r === 'shared' || r === 'cancelled' ? 'idle' : r);
+    } catch (e) {
+      console.error(e);
+      setState('error');
+    }
+  }
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-start' }}>
+      <button class={'btn' + (props.primary ? ' primary' : '')} type="button" disabled={props.disabled || state === 'busy'} onClick={() => void share()}>
+        <Icon name="share" /> {state === 'busy' ? 'Kootaan tiedostoa…' : props.label}
+      </button>
+      {state === 'needs-tap' && file && (
+        <div class="hint-text" role="status" style={{ color: 'var(--fg)', display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+          Tiedosto on valmis.
+          <button class="btn small primary" type="button" onClick={() => void share(file)}>
+            Jaa nyt
+          </button>
+        </div>
+      )}
+      {state === 'unsupported' && file && (
+        <div class="hint-text" role="status" style={{ color: 'var(--fg)', display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-start' }}>
+          Tämä selain ei osaa jakaa tiedostoja suoraan. Tallenna tiedosto puhelimeen ja lähetä se sieltä esimerkiksi WhatsAppilla.
+          <button class="btn small" type="button" onClick={() => downloadFile(file)}>
+            Tallenna tiedosto
+          </button>
+        </div>
+      )}
+      {state === 'error' && (
+        <p class="hint-text" role="status" style={{ color: 'var(--fg)', margin: 0 }}>
+          Jakaminen epäonnistui. Yritä uudelleen.
+        </p>
+      )}
+    </div>
   );
 }

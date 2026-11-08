@@ -84,7 +84,7 @@ export async function exportSetFile(setId: string): Promise<File> {
   const s = getData().sets.find((x) => x.id === setId);
   if (!s) throw new Error('Kuvasettiä ei löytynyt');
   const body = JSON.stringify({ type: SET_TYPE, version: VERSION, set: await exportOne(s) });
-  return new File([body], `Custom Spider - ${safeName(s.name)}.json`, { type: 'application/json' });
+  return new File([body], `Custom Spider - ${safeName(s.name)}.txt`, { type: 'text/plain' });
 }
 
 export async function exportAllFile(): Promise<File> {
@@ -94,24 +94,35 @@ export async function exportAllFile(): Promise<File> {
   const body = JSON.stringify({ type: BACKUP_TYPE, version: VERSION, sets: out });
   const d = new Date();
   const stamp = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-  return new File([body], `Custom Spider - varmuuskopio ${stamp}.json`, { type: 'application/json' });
+  return new File([body], `Custom Spider - varmuuskopio ${stamp}.txt`, { type: 'text/plain' });
 }
 
+// Tiedosto tallennetaan tekstitiedostona (.txt), koska Androidin Chrome sallii jakaa vain
+// tietyt tiedostotyypit (kuvat, PDF, teksti jne.) eikä hyväksy .json-tiedostoja.
+
+export type ShareResult = 'shared' | 'cancelled' | 'needs-tap' | 'unsupported';
+
 /**
- * Jakaa tiedoston puhelimen jakovalikolla. Jos jakaminen ei ole mahdollista,
- * tiedosto ladataan laitteelle. Palauttaa, kumpi tehtiin.
+ * Jakaa tiedoston puhelimen jakovalikolla. 'needs-tap' tarkoittaa, että selain vaatii
+ * uuden napautuksen (tiedoston kokoaminen kesti liian kauan), ja 'unsupported', ettei
+ * tiedostojen jakaminen ole tässä selaimessa mahdollista.
  */
-export async function shareOrDownload(file: File, title: string): Promise<'shared' | 'downloaded' | 'cancelled'> {
+export async function shareFile(file: File, title: string): Promise<ShareResult> {
   const nav = navigator as Navigator & { canShare?: (d: ShareData) => boolean };
-  if (nav.share && nav.canShare?.({ files: [file] })) {
-    try {
-      await nav.share({ files: [file], title });
-      return 'shared';
-    } catch (e) {
-      if ((e as DOMException)?.name === 'AbortError') return 'cancelled';
-      // Muu virhe: kokeillaan latausta.
-    }
+  if (!nav.share || !nav.canShare?.({ files: [file] })) return 'unsupported';
+  try {
+    await nav.share({ files: [file], title });
+    return 'shared';
+  } catch (e) {
+    const name = (e as DOMException)?.name;
+    if (name === 'AbortError') return 'cancelled';
+    if (name === 'NotAllowedError') return 'needs-tap';
+    throw e;
   }
+}
+
+/** Tallentaa tiedoston laitteelle (lataus). */
+export function downloadFile(file: File) {
   const url = URL.createObjectURL(file);
   const a = document.createElement('a');
   a.href = url;
@@ -120,7 +131,6 @@ export async function shareOrDownload(file: File, title: string): Promise<'share
   a.click();
   a.remove();
   window.setTimeout(() => URL.revokeObjectURL(url), 10000);
-  return 'downloaded';
 }
 
 function validSet(x: unknown): x is ExportedSet {
