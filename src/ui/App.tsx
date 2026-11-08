@@ -163,11 +163,11 @@ export function App() {
           {dialog === 'new' && (
             <div class="dialog" role="dialog" aria-label="Uusi peli">
               <h2>Uusi peli</h2>
-              <p>Valitse sarjojen määrä. Mitä enemmän sarjoja, sitä vaikeampi peli.</p>
+              <p>Valitse sarjojen eli maiden määrä. Mitä enemmän sarjoja, sitä vaikeampi peli.</p>
               <div class="seg" role="group" aria-label="Sarjoja">
                 {([1, 2, 3, 4] as SuitCount[]).map((n) => (
                   <button key={n} type="button" aria-pressed={newSuits === n} onClick={() => setNewSuits(n)}>
-                    {n} {n === 1 ? 'sarja' : 'sarjaa'}
+                    {n} {n === 1 ? 'sarja/maa' : 'sarjaa/maata'}
                   </button>
                 ))}
               </div>

@@ -56,10 +56,10 @@ export function SettingsPage({ onBack, onInstall, onSets }: { onBack: () => void
           label="Sarjoja"
           value={s.suits}
           options={[
-            [1, '1 sarja'],
-            [2, '2'],
-            [3, '3'],
-            [4, '4'],
+            [1, '1 sarja/maa'],
+            [2, '2 sarjaa/maata'],
+            [3, '3 sarjaa/maata'],
+            [4, '4 sarjaa/maata'],
           ]}
           onChange={(v) => updateSettings({ suits: v })}
         />

@@ -144,10 +144,10 @@ export function StatsPage({ onBack }: { onBack: () => void }) {
         label="Vaikeustaso"
         value={suits}
         options={[
-          [1, '1 sarja'],
-          [2, '2 sarjaa'],
-          [3, '3 sarjaa'],
-          [4, '4 sarjaa'],
+          [1, '1 sarja/maa'],
+          [2, '2 sarjaa/maata'],
+          [3, '3 sarjaa/maata'],
+          [4, '4 sarjaa/maata'],
         ]}
         onChange={setSuits}
       />
