@@ -1,17 +1,19 @@
 import { useEffect, useState } from 'preact/hooks';
 import { type SuitCount, newGame, score } from '../game/engine';
 import { getData, init, recordGame, setGame, updateSettings, useData } from '../store/store';
+import { ImportError, type ParsedImport, applyImport, parseImportFile, takeSharedFile } from '../store/transfer';
 import { Icon, SvgDefs } from './Art';
 import { clock } from './clock';
 import { Game, type Screen } from './Game';
 import { ImageEditor } from './ImageEditor';
+import { ImportPage } from './Import';
 import { InstallGuide, isStandalone } from './Install';
 import { SetEditor, SetsPage } from './Sets';
 import { SettingsPage } from './Settings';
 import { StatsPage } from './Stats';
 import { applyTheme } from './theme';
 
-type Page = { kind: Screen } | { kind: 'set'; id: string } | { kind: 'editor'; setId: string; imageId: string | null; file?: File };
+type Page = { kind: Screen } | { kind: 'import' } | { kind: 'set'; id: string } | { kind: 'editor'; setId: string; imageId: string | null; file?: File };
 type Dialog = null | 'menu' | 'new' | 'replay';
 
 /** Kirjaa keskeneräisen pelin häviöksi, jos siinä on tehty siirtoja. */
@@ -43,6 +45,8 @@ export function App() {
   const [showInstall, setShowInstall] = useState(() => !isStandalone());
   const [newSuits, setNewSuits] = useState<SuitCount>(1);
   const [nonce, setNonce] = useState(0);
+  const [pending, setPending] = useState<ParsedImport | null>(null);
+  const [importing, setImporting] = useState(false);
 
   useEffect(() => {
     void init();
@@ -59,6 +63,20 @@ export function App() {
   useEffect(() => {
     if (data.ready && !data.game) setGame(newGame(data.settings.suits), true);
   }, [data.ready, data.game]);
+
+  // Androidin jakovalikosta saapunut kuvasetti.
+  useEffect(() => {
+    if (!data.ready) return;
+    const q = new URLSearchParams(location.search);
+    if (!q.has('shared')) return;
+    history.replaceState(null, '', location.pathname);
+    setShowInstall(false);
+    void (async () => {
+      const blob = await takeSharedFile().catch(() => null);
+      if (blob) await handleImportFile(blob);
+      else toast('Jaettua tiedostoa ei saatu avattua. Kokeile Kuvasetit → Tuo setti.');
+    })();
+  }, [data.ready]);
 
   // Android: takaisin-painike sulkee ylimmän näkymän.
   useEffect(() => {
@@ -81,6 +99,29 @@ export function App() {
   function toast(msg: string) {
     setToastMsg(msg);
     window.setTimeout(() => setToastMsg((m) => (m === msg ? null : m)), 2600);
+  }
+  async function handleImportFile(f: Blob) {
+    try {
+      setPending(await parseImportFile(f));
+    } catch (e) {
+      toast(e instanceof ImportError ? e.message : 'Tiedoston lukeminen epäonnistui.');
+    }
+  }
+  async function confirmImport() {
+    if (!pending) return;
+    setImporting(true);
+    try {
+      const ids = await applyImport(pending);
+      toast(ids.length === 1 ? 'Kuvasetti tuotu.' : `${ids.length} kuvasettiä tuotu.`);
+      const next: Page = ids.length === 1 ? { kind: 'set', id: ids[0] } : { kind: 'sets' };
+      setPages((s) => (s.length && s[s.length - 1].kind === 'import' ? [...s.slice(0, -1), next] : s.length ? [...s, next] : (history.pushState({ d: 1 }, ''), [next])));
+    } catch (e) {
+      console.error(e);
+      toast('Kuvasetin tuonti epäonnistui.');
+    } finally {
+      setImporting(false);
+      setPending(null);
+    }
   }
   function openDialog(d: Dialog) {
     if (d === 'new') setNewSuits(getData().settings.suits);
@@ -120,7 +161,7 @@ export function App() {
       />
 
       {top?.kind === 'settings' && <SettingsPage onBack={pop} onInstall={() => push({ kind: 'install' })} onSets={() => push({ kind: 'sets' })} />}
-      {top?.kind === 'sets' && <SetsPage onBack={pop} onOpen={(id) => push({ kind: 'set', id })} />}
+      {top?.kind === 'sets' && <SetsPage onBack={pop} onOpen={(id) => push({ kind: 'set', id })} onImport={() => push({ kind: 'import' })} />}
       {top?.kind === 'set' && (
         <SetEditor
           id={top.id}
@@ -130,6 +171,7 @@ export function App() {
       )}
       {top?.kind === 'editor' && <ImageEditor setId={top.setId} imageId={top.imageId} file={top.file} onDone={pop} />}
       {top?.kind === 'stats' && <StatsPage onBack={pop} />}
+      {top?.kind === 'import' && <ImportPage onBack={pop} onFile={(f) => void handleImportFile(f)} />}
       {top?.kind === 'install' && <InstallGuide onClose={pop} asPage />}
       {showInstall && !top && <InstallGuide onClose={() => setShowInstall(false)} />}
 
@@ -196,6 +238,40 @@ export function App() {
               </div>
             </div>
           )}
+        </div>
+      )}
+      {pending && (
+        <div class="scrim" onClick={(e) => e.target === e.currentTarget && !importing && setPending(null)}>
+          <div class="dialog" role="dialog" aria-label="Tuo kuvasetti">
+            {pending.kind === 'set' ? (
+              <>
+                <h2>Tuodaanko kuvasetti “{pending.sets[0].name}”?</h2>
+                <p>
+                  Setissä on {pending.sets[0].images.length} {pending.sets[0].images.length === 1 ? 'kuva' : 'kuvaa'}. Siitä tulee oma kopiosi, jota voit muokata vapaasti.
+                </p>
+              </>
+            ) : (
+              <>
+                <h2>Palautetaanko varmuuskopio?</h2>
+                <p>Tiedostossa on {pending.sets.length} kuvasettiä. Ne lisätään settiesi joukkoon, eikä nykyisiä settejä poisteta.</p>
+                <ul style={{ margin: 0, paddingLeft: '20px', color: 'var(--muted)' }}>
+                  {pending.sets.map((s, i) => (
+                    <li key={i}>
+                      {s.name} ({s.images.length} kuvaa)
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+            <div class="row">
+              <button class="btn" type="button" disabled={importing} onClick={() => setPending(null)}>
+                Peruuta
+              </button>
+              <button class="btn primary" type="button" disabled={importing} onClick={() => void confirmImport()}>
+                {importing ? 'Tuodaan…' : 'Tuo'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
       {toastMsg && (

@@ -242,7 +242,7 @@ tiedostossa `design/tyyliluonnos.html`.
 
 - Vain ratkaistavat jaot
 - Päivän haaste
-- Kuvasettien vienti, tuonti ja varmuuskopiointi
+- (Toteutettu myöhemmin, ks. 13.3) Kuvasettien vienti, tuonti ja varmuuskopiointi
 - Automaattinen taustanpoisto tekoälyllä
 - Englannin kieli
 - Värinä
@@ -277,3 +277,17 @@ tiedostossa `design/tyyliluonnos.html`.
   langan varassa ja kortit himmenevät. Jos pöydällä on tyhjä sarake, häviö julistetaan vasta, kun
   laillisia siirtoja ei ole lainkaan.
 - Häviönäkymän vaihtoehdot ovat Kumoa, Pelaa sama jako uudelleen, Uusi peli ja Jatka silti.
+
+### 13.3 Kuvasettien jakaminen ja varmuuskopio
+
+- **Jaa setti** (setin sivulla) pakkaa yhden setin tiedostoksi `Custom Spider - <nimi>.json`: kuvat
+  täydessä laadussa, maskit, rajaukset, numerokartoitus, asettelu ja reunat. Tiedosto jaetaan
+  puhelimen jakovalikolla. Jos jakaminen ei onnistu, tiedosto tallentuu puhelimen latauksiin.
+- **Tuo setti** (kuvasettilistassa) avaa näkymän, jossa on ohjeet Androidille ja iPhonelle
+  (WhatsApp, sähköposti, muut sovellukset) ja Valitse tiedosto -nappi.
+- Androidilla asennettu peli näkyy jakovalikossa (Web Share Target), joten WhatsAppista voi jakaa
+  tiedoston suoraan peliin. iPhonella tiedosto tallennetaan ensin Tiedostot-sovellukseen.
+- Tuonti kysyy vahvistuksen. Tuotu setti on aina uusi, vapaasti muokattava kopio. Jos samanniminen
+  setti on jo olemassa, uusi saa nimen esimerkiksi "Mökin linnut (2)".
+- **Vie kaikki setit** tekee varmuuskopion kaikista omista seteistä yhteen tiedostoon. Se palautetaan
+  samasta Tuo setti -näkymästä.

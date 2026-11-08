@@ -1,12 +1,26 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { DEFAULT_SET_ID, type ImageSet, MAX_LIBRARY, uid } from '../store/model';
 import { quickRecord } from '../images/imaging';
+import { exportAllFile, exportSetFile, shareOrDownload } from '../store/transfer';
 import { deleteImage, deleteSet, getData, imageUrl, saveImage, updateSettings, upsertSet, urlKey, useData } from '../store/store';
 import { Icon, MiniCard } from './Art';
 import { Page, Seg, Switch } from './Settings';
 
-export function SetsPage({ onBack, onOpen }: { onBack: () => void; onOpen: (id: string) => void }) {
+export function SetsPage({ onBack, onOpen, onImport }: { onBack: () => void; onOpen: (id: string) => void; onImport: () => void }) {
   const { sets, settings, urls } = useData();
+  const [busy, setBusy] = useState<string | null>(null);
+  const ownSets = sets.filter((s) => s.id !== DEFAULT_SET_ID);
+  async function backup() {
+    setBusy('Kootaan varmuuskopiota…');
+    try {
+      const file = await exportAllFile();
+      const r = await shareOrDownload(file, 'Custom Spider -varmuuskopio');
+      setBusy(r === 'downloaded' ? 'Varmuuskopio tallennettiin puhelimen latauksiin.' : null);
+    } catch (e) {
+      console.error(e);
+      setBusy('Varmuuskopion tekeminen epäonnistui.');
+    }
+  }
   function create() {
     const s: ImageSet = {
       id: uid(),
@@ -49,11 +63,28 @@ export function SetsPage({ onBack, onOpen }: { onBack: () => void; onOpen: (id: 
           </div>
         ))}
       </div>
-      <div>
+      <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
         <button class="btn primary" type="button" onClick={create}>
           <Icon name="plus" /> Uusi kuvasetti
         </button>
+        <button class="btn" type="button" onClick={onImport}>
+          <Icon name="install" /> Tuo setti
+        </button>
       </div>
+      <section class="section">
+        <h2>Varmuuskopio</h2>
+        <p class="hint-text">Tallentaa kaikki omat kuvasetit yhteen tiedostoon esimerkiksi puhelimen vaihtoa varten. Tiedoston voi palauttaa kohdasta Tuo setti.</p>
+        <div>
+          <button class="btn" type="button" onClick={backup} disabled={!ownSets.length}>
+            <Icon name="share" /> Vie kaikki setit
+          </button>
+        </div>
+        {busy && (
+          <p class="hint-text" role="status" style={{ color: 'var(--fg)' }}>
+            {busy}
+          </p>
+        )}
+      </section>
     </Page>
   );
 }
@@ -80,6 +111,7 @@ export function SetEditor({ id, onBack, onEditImage }: { id: string; onBack: () 
   const [name, setName] = useState(set?.name ?? '');
   const [over, setOver] = useState<number | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
+  const [sharing, setSharing] = useState<string | null>(null);
   const dragFrom = useRef<{ n: number; x: number; y: number; moved: boolean } | null>(null);
   const suppressClick = useRef(false);
 
@@ -150,6 +182,18 @@ export function SetEditor({ id, onBack, onEditImage }: { id: string; onBack: () 
     upsertSet({ ...getData().sets.find((x) => x.id === set!.id)!, images, map });
     setBusy(files.length > room ? `Lisättiin ${take.length} kuvaa. Settiin mahtuu enintään ${MAX_LIBRARY} kuvaa.` : null);
     if (files.length > room) window.setTimeout(() => setBusy(null), 3500);
+  }
+
+  async function shareSet() {
+    setSharing('Kootaan tiedostoa…');
+    try {
+      const file = await exportSetFile(set!.id);
+      const r = await shareOrDownload(file, set!.name);
+      setSharing(r === 'downloaded' ? 'Tiedosto tallennettiin puhelimen latauksiin. Lähetä se sieltä esimerkiksi WhatsAppilla.' : null);
+    } catch (e) {
+      console.error(e);
+      setSharing('Jakaminen epäonnistui.');
+    }
   }
 
   function duplicate() {
@@ -267,6 +311,11 @@ export function SetEditor({ id, onBack, onEditImage }: { id: string; onBack: () 
       <section class="section">
         <h2>Setti</h2>
         <div class="row" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          {!isDefault && (
+            <button class="btn primary" type="button" onClick={shareSet} disabled={!!sharing && sharing.startsWith('Kootaan')}>
+              <Icon name="share" /> Jaa setti
+            </button>
+          )}
           <button class="btn" type="button" onClick={duplicate}>
             Monista
           </button>
@@ -276,6 +325,12 @@ export function SetEditor({ id, onBack, onEditImage }: { id: string; onBack: () 
             </button>
           )}
         </div>
+        {sharing && (
+          <p class="hint-text" role="status" style={{ color: 'var(--fg)' }}>
+            {sharing}
+          </p>
+        )}
+        {!isDefault && <p class="hint-text">Jaa setti perheenjäsenelle esimerkiksi WhatsAppilla. Kuvat kulkevat vain lähettämässäsi viestissä.</p>}
       </section>
 
       {sheet && (
