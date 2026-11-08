@@ -411,7 +411,7 @@ export function SetEditor({ id, onBack, onEditImage }: { id: string; onBack: () 
   );
 }
 
-type ShareState = 'idle' | 'busy' | 'needs-tap' | 'unsupported' | 'error';
+type ShareState = 'idle' | 'busy' | 'needs-tap' | 'unsupported' | 'error' | 'saved';
 
 /** Jakonappi: kokoaa tiedoston ja avaa puhelimen jakovalikon. */
 function ShareFlow(props: { label: string; title: string; make: () => Promise<File>; primary?: boolean; disabled?: boolean }) {
@@ -432,11 +432,33 @@ function ShareFlow(props: { label: string; title: string; make: () => Promise<Fi
       setState('error');
     }
   }
+  async function save() {
+    try {
+      setState('busy');
+      const f = await props.make();
+      setFile(f);
+      downloadFile(f);
+      setState('saved');
+    } catch (e) {
+      console.error(e);
+      setState('error');
+    }
+  }
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-start' }}>
-      <button class={'btn' + (props.primary ? ' primary' : '')} type="button" disabled={props.disabled || state === 'busy'} onClick={() => void share()}>
-        <Icon name="share" /> {state === 'busy' ? 'Kootaan tiedostoa…' : props.label}
-      </button>
+      <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+        <button class={'btn' + (props.primary ? ' primary' : '')} type="button" disabled={props.disabled || state === 'busy'} onClick={() => void share()}>
+          <Icon name="share" /> {state === 'busy' ? 'Kootaan tiedostoa…' : props.label}
+        </button>
+        <button class="btn" type="button" disabled={props.disabled || state === 'busy'} onClick={() => void save()}>
+          <Icon name="install" /> Tallenna puhelimeen
+        </button>
+      </div>
+      {state === 'saved' && (
+        <p class="hint-text" role="status" style={{ color: 'var(--fg)', margin: 0 }}>
+          Tiedosto tallennettiin puhelimen latauksiin. Voit lähettää sen sieltä esimerkiksi WhatsAppilla.
+        </p>
+      )}
       {state === 'needs-tap' && file && (
         <div class="hint-text" role="status" style={{ color: 'var(--fg)', display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
           Tiedosto on valmis.
@@ -445,13 +467,10 @@ function ShareFlow(props: { label: string; title: string; make: () => Promise<Fi
           </button>
         </div>
       )}
-      {state === 'unsupported' && file && (
-        <div class="hint-text" role="status" style={{ color: 'var(--fg)', display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-start' }}>
+      {state === 'unsupported' && (
+        <p class="hint-text" role="status" style={{ color: 'var(--fg)', margin: 0 }}>
           Tämä selain ei osaa jakaa tiedostoja suoraan. Tallenna tiedosto puhelimeen ja lähetä se sieltä esimerkiksi WhatsAppilla.
-          <button class="btn small" type="button" onClick={() => downloadFile(file)}>
-            Tallenna tiedosto
-          </button>
-        </div>
+        </p>
       )}
       {state === 'error' && (
         <p class="hint-text" role="status" style={{ color: 'var(--fg)', margin: 0 }}>
