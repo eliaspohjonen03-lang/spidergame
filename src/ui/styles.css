@@ -255,3 +255,30 @@ input[type="text"] { font: inherit; color: var(--fg); background: var(--panel2);
 .titleedit input:focus { border-bottom-color: var(--accent); }
 .titleedit:focus-within svg { color: var(--accent); }
 .titleedit svg { flex: none; }
+
+/* Häviö */
+.game.lost .card .inner { filter: grayscale(.75) brightness(.6); transition: filter 1.2s ease; }
+.lose { position: absolute; inset: 0; z-index: 900; display: grid; place-items: center; padding: 16px;
+  background: color-mix(in srgb, var(--b2) 45%, transparent); animation: fade .8s; overflow: hidden; }
+.lose-thread { position: absolute; left: 50%; top: 0; width: 2px; height: 22vh; margin-left: -1px;
+  background: linear-gradient(color-mix(in srgb, var(--fg) 10%, transparent), color-mix(in srgb, var(--fg) 55%, transparent));
+  transform-origin: top; animation: thread 1.6s cubic-bezier(.3, .8, .4, 1) both; }
+.lose-spider { position: absolute; left: 50%; bottom: 0; width: 64px; height: 64px; margin-left: -32px; margin-bottom: -40px;
+  color: var(--s0); transform-origin: 50% 0; animation: sway 2.8s ease-in-out 1.6s infinite alternate;
+  filter: drop-shadow(0 0 calc(var(--glowk) * 10px) color-mix(in srgb, var(--s0) 60%, transparent)); }
+.lose-spider svg { width: 100%; height: 100%; transform: rotate(180deg); }
+@keyframes thread { from { transform: scaleY(0); } }
+@keyframes sway { from { transform: rotate(-6deg); } to { transform: rotate(6deg); } }
+.losemsg { --msgdelay: 1.3s; max-width: 360px; }
+.losemsg p { margin: 0; }
+@media (prefers-reduced-motion: reduce) {
+  .lose-thread, .lose-spider { animation: none; }
+  .game.lost .card .inner { transition: none; }
+}
+@media (max-height: 520px) {
+  .lose { place-items: end center; padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 12px); }
+  .lose-thread { height: 14vh; }
+  .losemsg { max-width: 560px; gap: 8px; padding: 14px 18px; }
+  .losemsg h2 { font-size: 24px; }
+  .losemsg .menu { display: grid; grid-template-columns: 1fr 1fr; }
+}

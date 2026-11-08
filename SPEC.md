@@ -270,3 +270,10 @@ tiedostossa `design/tyyliluonnos.html`.
   - poisto vain reunoihin yhteydessä olevalta alueelta tai kaikkialta
   - poistetun alueen kohdalla näkyy kortin oma tausta, kuten hämähäkkikuvassa
 - Läpinäkyvät PNG-kuvat säilyttävät läpinäkyvyytensä.
+
+### 13.2 Häviö
+
+- Kun pakka on tyhjä eikä hyödyllisiä siirtoja ole, peli näyttää häviöanimaation: hämähäkki laskeutuu
+  langan varassa ja kortit himmenevät. Jos pöydällä on tyhjä sarake, häviö julistetaan vasta, kun
+  laillisia siirtoja ei ole lainkaan.
+- Häviönäkymän vaihtoehdot ovat Kumoa, Pelaa sama jako uudelleen, Uusi peli ja Jatka silti.

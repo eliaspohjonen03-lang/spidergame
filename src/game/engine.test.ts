@@ -8,6 +8,7 @@ import {
   deal,
   hints,
   isMovable,
+  isLost,
   isStuck,
   newGame,
   runsPerSuit,
@@ -192,4 +193,25 @@ describe('vihjeet ja napautus', () => {
     const cols = Array.from({ length: 10 }, () => [c(5)]);
     expect(isStuck(state(cols))).toBe(true);
   });
+
+  it('tunnistaa häviön, kun hyödyllisiä siirtoja ei ole', () => {
+    // 5 voisi siirtyä toisen 6:n päälle, mutta se rikkoisi valmiin saman sarjan pinon.
+    const cols = Array.from({ length: 10 }, () => [c(13)]);
+    cols[0] = [c(6, 0), c(5, 0)];
+    cols[1] = [c(6, 1)];
+    expect(isStuck(state(cols))).toBe(false);
+    expect(isLost(state(cols))).toBe(true);
+  });
+
+  it('ei julista häviötä, kun pakassa on kortteja', () => {
+    const cols = Array.from({ length: 10 }, () => [c(5)]);
+    expect(isLost(state(cols, [c(3, 0, false)]))).toBe(false);
+  });
+
+  it('ei julista häviötä, kun hyödyllinen siirto löytyy', () => {
+    const cols = Array.from({ length: 10 }, () => [c(10)]);
+    cols[0] = [c(2, 0, false), c(9)];
+    expect(isLost(state(cols))).toBe(false);
+  });
 });
+

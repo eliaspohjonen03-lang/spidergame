@@ -9,7 +9,7 @@ import {
   deal,
   hints,
   isMovable,
-  isStuck,
+  isLost,
   score,
   undo,
 } from '../game/engine';
@@ -18,13 +18,14 @@ import { Back, Face, Icon, picUrl, setClasses, webPaths } from './Art';
 import { sfx } from './audio';
 import { clock, formatTime } from './clock';
 import { type Layout, type Pos, cardPositions, columnAtX, computeLayout } from './layout';
+import { LoseOverlay } from './Lose';
 import { WinOverlay } from './Win';
 
 export type Screen = 'settings' | 'sets' | 'stats' | 'install';
 
 interface Props {
   onMenu: () => void;
-  onStuck: () => void;
+  onReplay: () => void;
   toast: (msg: string) => void;
   onNav: (s: Screen) => void;
   onNewGame: () => void;
@@ -77,6 +78,7 @@ export function Game(p: Props) {
   const [lifted, setLifted] = useState<{ ids: Set<number>; deal: number[] }>({ ids: new Set(), deal: [] });
   const [shake, setShake] = useState<number | null>(null);
   const [showWin, setShowWin] = useState(g.status === 'won');
+  const [showLoss, setShowLoss] = useState(() => isLost(g));
   const hintIdx = useRef(0);
   const hintList = useRef<Hint[]>([]);
   const drag = useRef<Drag | null>(null);
@@ -166,7 +168,15 @@ export function Game(p: Props) {
     if (kind === 'deal') sfx.deal();
     else sfx.move();
     if (next.done.length > ranBefore) window.setTimeout(() => sfx.run(), 180);
-    if (isStuck(next)) window.setTimeout(() => p.onStuck(), 600);
+    setShowLoss(false);
+    if (isLost(next)) {
+      window.setTimeout(() => {
+        if (isLost(gameRef.current)) {
+          setShowLoss(true);
+          sfx.lose();
+        }
+      }, 650);
+    }
   }
 
   function tryMove(from: number, index: number, to: number): boolean {
@@ -325,7 +335,7 @@ export function Game(p: Props) {
 
   return (
     <div
-      class={'game ' + setClasses(set)}
+      class={'game ' + setClasses(set) + (showLoss ? ' lost' : '')}
       style={{ '--w': L.w + 'px' }}
       onPointerMove={onPointerMove}
       onPointerUp={(e) => endDrag(e)}
@@ -419,6 +429,21 @@ export function Game(p: Props) {
         );
       })}
 
+      {showLoss && g.status === 'playing' && (
+        <LoseOverlay
+          game={{ ...g, elapsedMs: clock.elapsed() }}
+          onUndo={() => {
+            setShowLoss(false);
+            doUndo();
+          }}
+          onReplay={p.onReplay}
+          onNew={() => {
+            setShowLoss(false);
+            p.onNewGame();
+          }}
+          onContinue={() => setShowLoss(false)}
+        />
+      )}
       {showWin && g.status === 'won' && (
         <WinOverlay
           game={g}

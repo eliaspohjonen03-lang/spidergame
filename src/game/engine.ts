@@ -278,3 +278,14 @@ export function bestTarget(s: Board, from: number, index: number): number | null
   }
   return best;
 }
+
+/**
+ * Peli on hävitty, kun pakka on tyhjä eikä hyödyllisiä siirtoja ole.
+ * Tyhjän sarakkeen kanssa vaaditaan, ettei laillisia siirtoja ole lainkaan,
+ * koska tyhjän sarakkeen avulla voi järjestellä pinoja tavoilla, joita vihje ei arvioi.
+ */
+export function isLost(s: GameState): boolean {
+  if (s.status !== 'playing' || s.stock.length > 0) return false;
+  if (s.cols.some((c) => c.length === 0)) return isStuck(s);
+  return hints(s).every((h) => h.kind !== 'move');
+}

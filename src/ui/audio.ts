@@ -70,6 +70,11 @@ export const sfx = {
     const notes = [523, 659, 784, 1047, 988, 1175, 1568];
     notes.forEach((f, i) => tone(c, f, c.currentTime + i * 0.13, 1.4, 0.07, 'triangle'));
   },
+  lose() {
+    const c = ac();
+    if (!c) return;
+    [523, 466, 392, 330].forEach((f, i) => tone(c, f, c.currentTime + i * 0.22, 1.1, 0.06, 'triangle'));
+  },
   nope() {
     const c = ac();
     if (c) tone(c, 180, c.currentTime, 0.12, 0.08, 'sine');

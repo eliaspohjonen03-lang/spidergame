@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'preact/hooks';
-import { type SuitCount, newGame, score, undo } from '../game/engine';
+import { type SuitCount, newGame, score } from '../game/engine';
 import { getData, init, recordGame, setGame, updateSettings, useData } from '../store/store';
 import { Icon, SvgDefs } from './Art';
 import { clock } from './clock';
@@ -12,7 +12,7 @@ import { StatsPage } from './Stats';
 import { applyTheme } from './theme';
 
 type Page = { kind: Screen } | { kind: 'set'; id: string } | { kind: 'editor'; setId: string; imageId: string | null; file?: File };
-type Dialog = null | 'menu' | 'new' | 'replay' | 'stuck';
+type Dialog = null | 'menu' | 'new' | 'replay';
 
 /** Kirjaa keskeneräisen pelin häviöksi, jos siinä on tehty siirtoja. */
 function abandonCurrent() {
@@ -113,7 +113,7 @@ export function App() {
       <Game
         key={nonce + ':' + data.game.seed + ':' + data.game.suits}
         onMenu={() => openDialog('menu')}
-        onStuck={() => openDialog('stuck')}
+        onReplay={replay}
         toast={toast}
         onNav={(s) => push({ kind: s })}
         onNewGame={() => openDialog('new')}
@@ -192,32 +192,6 @@ export function App() {
                 </button>
                 <button class="btn primary" type="button" onClick={replay}>
                   Aloita alusta
-                </button>
-              </div>
-            </div>
-          )}
-          {dialog === 'stuck' && (
-            <div class="dialog" role="dialog" aria-label="Siirrot loppuivat">
-              <h2>Siirrot loppuivat</h2>
-              <p>Pakka on tyhjä, eikä pöydällä ole enää siirtoja.</p>
-              <div class="menu">
-                <button
-                  class="btn"
-                  type="button"
-                  onClick={() => {
-                    const g = getData().game;
-                    const u = g && undo(g);
-                    if (u) setGame({ ...u, elapsedMs: clock.elapsed() });
-                    setDialog(null);
-                  }}
-                >
-                  <Icon name="undo" /> Kumoa
-                </button>
-                <button class="btn" type="button" onClick={replay}>
-                  <Icon name="replay" /> Pelaa sama jako uudelleen
-                </button>
-                <button class="btn primary" type="button" onClick={() => openDialog('new')}>
-                  <Icon name="play" /> Uusi peli
                 </button>
               </div>
             </div>
