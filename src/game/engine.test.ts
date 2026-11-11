@@ -176,11 +176,35 @@ describe('vihjeet ja napautus', () => {
     expect(bestTarget(g, 2, 0)).toBeNull();
   });
 
-  it('vihje suosii kortin paljastavaa siirtoa', () => {
+  it('vihje käy siirrot läpi laudan järjestyksessä', () => {
     const g = state([[c(9, 0)], [c(9, 1)], [c(2, 0, false), c(8, 2)], [c(8, 3)]]);
-    const h = hints(g)[0];
-    expect(h.kind).toBe('move');
-    if (h.kind === 'move') expect(h.move.from).toBe(2);
+    const moves = hints(g).flatMap((h) => (h.kind === 'move' ? [[h.move.from, h.move.to]] : []));
+    expect(moves.slice(0, 2)).toEqual([
+      [2, 0],
+      [2, 1],
+    ]);
+    expect(moves.slice(2, 4)).toEqual([
+      [3, 0],
+      [3, 1],
+    ]);
+  });
+
+  it('vihje sisältää siirron tyhjään sarakkeeseen', () => {
+    const g = state([[c(9, 0), c(8, 1)], []]);
+    const h = hints(g);
+    expect(h.some((x) => x.kind === 'move' && x.move.from === 0 && x.move.index === 1 && x.move.to === 1)).toBe(true);
+  });
+
+  it('vihje ohittaa siirron samanarvoisen kortin päältä toiselle', () => {
+    const g = state([[c(9, 0), c(8, 1)], [c(9, 2)], [c(9, 1)]]);
+    const moves = hints(g).flatMap((h) => (h.kind === 'move' ? [h.move] : []));
+    // 8 siirtyy eri maan yhdeksikön päältä vain oman maansa yhdeksikön päälle.
+    expect(moves).toEqual([{ from: 0, index: 1, to: 2 }]);
+  });
+
+  it('vihje ohittaa siirron saman maan jonosta', () => {
+    const g = state([[c(9, 0), c(8, 0)], [c(9, 0)]]);
+    expect(hints(g).every((h) => h.kind !== 'move')).toBe(true);
   });
 
   it('ehdottaa jakoa, kun siirtoja ei ole', () => {

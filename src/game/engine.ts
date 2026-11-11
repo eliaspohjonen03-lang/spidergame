@@ -217,9 +217,34 @@ export function isStuck(s: GameState): boolean {
 
 export type Hint = { kind: 'move'; move: Move } | { kind: 'deal' } | { kind: 'none' };
 
-/** Järjestää siirrot hyödyllisyyden mukaan. Hyödyttömät siirrot jätetään pois. */
+/**
+ * Kaikki vihjeenä näytettävät siirrot laudan järjestyksessä: sarakkeet vasemmalta oikealle,
+ * sarakkeen sisällä päällimmäinen kortti ensin ja sitten pidemmät pinot, kohteet vasemmalta oikealle.
+ * Pois jätetään vain siirrot, joissa kortti siirtyy samanarvoisen kortin päältä toisen päälle,
+ * paitsi jos se siirtyy eri maan kortin päältä oman maansa päälle. Jako on viimeisenä.
+ */
 export function hints(s: Board): Hint[] {
-  const scored: { move: Move; value: number }[] = [];
+  const out: Hint[] = [];
+  for (const m of legalMoves(s)) {
+    const col = s.cols[m.from];
+    const card = col[m.index];
+    const below = m.index > 0 ? col[m.index - 1] : null;
+    const target = s.cols[m.to];
+    const top = target.length ? target[target.length - 1] : null;
+    const sitsOnNatural = !!below && below.up && below.rank === card.rank + 1;
+    if (sitsOnNatural && top) {
+      const improvesSuit = below!.suit !== card.suit && top.suit === card.suit;
+      if (!improvesSuit) continue;
+    }
+    out.push({ kind: 'move', move: m });
+  }
+  if (s.stock.length > 0 && !s.cols.some((c) => c.length === 0)) out.push({ kind: 'deal' });
+  if (out.length === 0) out.push({ kind: 'none' });
+  return out;
+}
+
+/** Onko laudalla yksikin hyödyllinen siirto (käytetään häviön tunnistamiseen). */
+function hasUsefulMove(s: Board): boolean {
   for (const m of legalMoves(s)) {
     const col = s.cols[m.from];
     const card = col[m.index];
@@ -229,27 +254,16 @@ export function hints(s: Board): Hint[] {
     const sameSuitTarget = !!top && top.suit === card.suit;
     const sitsOnNatural = !!below && below.up && below.rank === card.rank + 1;
     const sitsOnSameSuit = sitsOnNatural && below!.suit === card.suit;
-    let value = 0;
     if (!top) {
       // Tyhjään sarakkeeseen: hyödyllinen vain, jos se paljastaa kortin.
-      if (below && !below.up) value = 20;
-      else continue;
-    } else {
-      if (sitsOnSameSuit) continue;
-      if (below && !below.up) value += 60;
-      if (m.index === 0) value += 50;
-      if (sameSuitTarget) value += 40;
-      if (sitsOnNatural && !sameSuitTarget) continue;
-      value += 10;
-      value += col.length - m.index; // pidemmät pinot ensin
+      if (below && !below.up) return true;
+      continue;
     }
-    scored.push({ move: m, value });
+    if (sitsOnSameSuit) continue;
+    if (sitsOnNatural && !sameSuitTarget) continue;
+    return true;
   }
-  scored.sort((a, b) => b.value - a.value);
-  const out: Hint[] = scored.map((x) => ({ kind: 'move', move: x.move }));
-  if (s.stock.length > 0 && !s.cols.some((c) => c.length === 0)) out.push({ kind: 'deal' });
-  if (out.length === 0) out.push({ kind: 'none' });
-  return out;
+  return false;
 }
 
 /** Paras kohde napautukselle: saman sarjan jatko, muu sallittu kortti, tyhjä sarake. */
@@ -287,5 +301,5 @@ export function bestTarget(s: Board, from: number, index: number): number | null
 export function isLost(s: GameState): boolean {
   if (s.status !== 'playing' || s.stock.length > 0) return false;
   if (s.cols.some((c) => c.length === 0)) return isStuck(s);
-  return hints(s).every((h) => h.kind !== 'move');
+  return !hasUsefulMove(s);
 }

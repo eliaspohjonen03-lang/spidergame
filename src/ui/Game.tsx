@@ -21,6 +21,16 @@ import { type Layout, type Pos, cardPositions, columnAtX, computeLayout } from '
 import { LoseOverlay } from './Lose';
 import { WinOverlay } from './Win';
 
+interface HintView {
+  /** Siirrettävien korttien id:t. */
+  src: number[];
+  /** Kohdesarakkeen päällimmäinen kortti, tai null jos sarake on tyhjä. */
+  dst: number | null;
+  to: number | null;
+  stock: boolean;
+  n: number;
+}
+
 export type Screen = 'settings' | 'sets' | 'stats' | 'install';
 
 interface Props {
@@ -74,7 +84,8 @@ export function Game(p: Props) {
   const hudRef = useRef<HTMLDivElement>(null);
   const [hudH, setHudH] = useState(56);
   const [safeB, setSafeB] = useState(0);
-  const [hint, setHint] = useState<{ ids: number[]; stock: boolean } | null>(null);
+  const [hint, setHint] = useState<HintView | null>(null);
+  const hintTimer = useRef(0);
   const [lifted, setLifted] = useState<{ ids: Set<number>; deal: number[] }>({ ids: new Set(), deal: [] });
   const [shake, setShake] = useState<number | null>(null);
   const [showWin, setShowWin] = useState(g.status === 'won');
@@ -214,20 +225,24 @@ export function Game(p: Props) {
     }
     const h = hintList.current[hintIdx.current % hintList.current.length];
     hintIdx.current++;
+    window.clearTimeout(hintTimer.current);
     if (h.kind === 'none') {
-      p.toast('Hyödyllisiä siirtoja ei löytynyt.');
+      setHint(null);
+      p.toast('Siirtoja ei löytynyt.');
       return;
     }
+    let view: HintView;
     if (h.kind === 'deal') {
-      setHint({ ids: [], stock: true });
+      view = { src: [], dst: null, to: null, stock: true, n: hintIdx.current };
     } else {
       const { from, index, to } = h.move;
-      const ids = cur.cols[from].slice(index).map((c) => c.id);
       const t = cur.cols[to];
-      if (t.length) ids.push(t[t.length - 1].id);
-      setHint({ ids, stock: false });
+      view = { src: cur.cols[from].slice(index).map((c) => c.id), dst: t.length ? t[t.length - 1].id : null, to, stock: false, n: hintIdx.current };
     }
-    window.setTimeout(() => setHint(null), 2200);
+    // Nollataan ensin, jotta animaatio alkaa alusta myös peräkkäisillä painalluksilla.
+    setHint(null);
+    requestAnimationFrame(() => setHint(view));
+    hintTimer.current = window.setTimeout(() => setHint(null), 3200);
   }
 
   // ---------- Kosketus ----------
@@ -330,7 +345,28 @@ export function Game(p: Props) {
 
   const dews = data.settings.style !== 'muste';
   const t = performance.now();
-  const hintIds = new Set(hint?.ids ?? []);
+  const hintSrc = new Set(hint?.src ?? []);
+  const hintArrow = (() => {
+    if (!hint || hint.stock || !hint.src.length || hint.to === null) return null;
+    const a = pos.get(hint.src[0]);
+    if (!a) return null;
+    const ch = L.w * 1.42;
+    const x1 = a.x + L.w / 2;
+    const y1 = a.y + L.w * 0.3;
+    let x2: number;
+    let y2: number;
+    if (hint.dst !== null) {
+      const b = pos.get(hint.dst)!;
+      x2 = b.x + L.w / 2;
+      y2 = b.y + ch * 0.55;
+    } else {
+      x2 = L.colsX + hint.to * (L.w + L.gap) + L.w / 2;
+      y2 = L.colsY + ch * 0.5;
+    }
+    const lift = Math.max(40, Math.abs(x2 - x1) * 0.35);
+    const cy = Math.min(y1, y2) - lift;
+    return { d: `M${x1},${y1} Q${(x1 + x2) / 2},${cy} ${x2},${y2}`, x1, y1, x2, y2 };
+  })();
   const stockGroups = Math.ceil(g.stock.length / 10);
 
   return (
@@ -380,7 +416,7 @@ export function Game(p: Props) {
       {/* Tyhjien sarakkeiden ja paikkojen merkit */}
       {g.cols.map((col, c) =>
         col.length === 0 ? (
-          <div key={'e' + c} class="slot" style={{ width: L.w + 'px', height: L.h + 'px', transform: `translate(${L.colsX + c * (L.w + L.gap)}px, ${L.colsY}px)` }} />
+          <div key={'e' + c} class={'slot' + (hint && hint.to === c && hint.dst === null ? ' hint-dst' : '')} style={{ width: L.w + 'px', height: L.h + 'px', transform: `translate(${L.colsX + c * (L.w + L.gap)}px, ${L.colsY}px)` }} />
         ) : null,
       )}
       {Array.from({ length: 8 }, (_, i) => {
@@ -405,7 +441,7 @@ export function Game(p: Props) {
         const flipAt = flips.current.get(c.id);
         const flipping = flipAt !== undefined && t - flipAt < 400;
         if (flipAt !== undefined && !flipping) flips.current.delete(c.id);
-        const cls = ['card', ps.flat && !isLifted ? 'flat' : '', flipping ? 'flip' : '', shake === c.id ? 'shake' : '', hintIds.has(c.id) || (hint?.stock && g.stock.includes(c)) ? 'hint' : '']
+        const cls = ['card', ps.flat && !isLifted ? 'flat' : '', flipping ? 'flip' : '', shake === c.id ? 'shake' : '', hintSrc.has(c.id) || (hint?.stock && g.stock.includes(c)) ? 'hint-src' : '', hint && hint.dst === c.id ? 'hint-dst' : '']
           .filter(Boolean)
           .join(' ');
         return (
@@ -428,6 +464,19 @@ export function Game(p: Props) {
           </div>
         );
       })}
+
+      {hintArrow && (
+        <svg key={'ha' + hint!.n} class="hintarrow" viewBox={`0 0 ${vp.w} ${vp.h}`} aria-hidden="true">
+          <defs>
+            <marker id="hintHead" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="var(--s2)" />
+            </marker>
+          </defs>
+          <path class="halo" d={hintArrow.d} pathLength={1} />
+          <path class="line" d={hintArrow.d} pathLength={1} marker-end="url(#hintHead)" />
+          <circle class="dot" cx={hintArrow.x1} cy={hintArrow.y1} r={6} />
+        </svg>
+      )}
 
       {showLoss && g.status === 'playing' && (
         <LoseOverlay
