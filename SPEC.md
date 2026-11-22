@@ -63,11 +63,12 @@ Pakassa on aina 8 jonoa, ja ne jaetaan sarjoille näin:
 ### 2.3 Pelin aikana
 
 - **Vihje:** näyttää yhden mahdollisen siirron. Siirrettävät kortit pomppaavat ja hehkuvat,
-  kohde hehkuu ja kaari osoittaa siirron suunnan. Jokainen painallus näyttää seuraavan siirron
+  ja kohde hehkuu. Jokainen painallus näyttää seuraavan siirron
   laudan järjestyksessä (sarakkeet vasemmalta oikealle, ensin päällimmäinen kortti, sitten
   pidemmät pinot), ja lopuksi jakopakan, jos jakaminen on mahdollista. Vihje ei arvioi siirtojen
-  hyvyyttä. Pois jätetään vain siirto samanarvoisen kortin päältä toisen päälle, paitsi jos
-  kortti siirtyy eri maan päältä oman maansa päälle. Siirrot tyhjään sarakkeeseen ovat mukana.
+  hyvyyttä. Pois jätetään siirrot, jotka katkaisevat saman maan jonon (myös tyhjään sarakkeeseen),
+  sekä siirto samanarvoisen kortin päältä toisen päälle, paitsi jos kortti siirtyy eri maan päältä
+  oman maansa päälle. Siirrot tyhjään sarakkeeseen ovat mukana.
 - **Siirrot loppuivat:** kun pakka on tyhjä eikä yhtään laillista siirtoa ole, peli näyttää
   ilmoituksen. Vaihtoehdot ovat Kumoa, Pelaa sama jako uudelleen ja Uusi peli.
 - **Uusi peli kesken pelin:** peli kysyy vahvistuksen. Keskeytetty peli kirjataan

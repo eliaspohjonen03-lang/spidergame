@@ -220,8 +220,8 @@ export type Hint = { kind: 'move'; move: Move } | { kind: 'deal' } | { kind: 'no
 /**
  * Kaikki vihjeenä näytettävät siirrot laudan järjestyksessä: sarakkeet vasemmalta oikealle,
  * sarakkeen sisällä päällimmäinen kortti ensin ja sitten pidemmät pinot, kohteet vasemmalta oikealle.
- * Pois jätetään vain siirrot, joissa kortti siirtyy samanarvoisen kortin päältä toisen päälle,
- * paitsi jos se siirtyy eri maan kortin päältä oman maansa päälle. Jako on viimeisenä.
+ * Pois jätetään siirrot, jotka katkaisevat saman maan jonon, sekä siirrot samanarvoisen kortin
+ * päältä toisen päälle, paitsi jos kortti siirtyy eri maan kortin päältä oman maansa päälle. Jako on viimeisenä.
  */
 export function hints(s: Board): Hint[] {
   const out: Hint[] = [];
@@ -232,9 +232,10 @@ export function hints(s: Board): Hint[] {
     const target = s.cols[m.to];
     const top = target.length ? target[target.length - 1] : null;
     const sitsOnNatural = !!below && below.up && below.rank === card.rank + 1;
-    if (sitsOnNatural && top) {
-      const improvesSuit = below!.suit !== card.suit && top.suit === card.suit;
-      if (!improvesSuit) continue;
+    if (sitsOnNatural) {
+      // Saman maan jonoa ei koskaan katkaista, ei myöskään tyhjään sarakkeeseen.
+      if (below!.suit === card.suit) continue;
+      if (top && top.suit !== card.suit) continue;
     }
     out.push({ kind: 'move', move: m });
   }

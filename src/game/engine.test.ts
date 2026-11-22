@@ -202,6 +202,12 @@ describe('vihjeet ja napautus', () => {
     expect(moves).toEqual([{ from: 0, index: 1, to: 2 }]);
   });
 
+  it('vihje ei katkaise saman maan jonoa tyhjään sarakkeeseen', () => {
+    const g = state([[c(2, 1, false), c(9, 0), c(8, 0)], []]);
+    const moves = hints(g).flatMap((h) => (h.kind === 'move' && h.move.from === 0 ? [h.move] : []));
+    expect(moves).toEqual([{ from: 0, index: 1, to: 1 }]);
+  });
+
   it('vihje ohittaa siirron saman maan jonosta', () => {
     const g = state([[c(9, 0), c(8, 0)], [c(9, 0)]]);
     expect(hints(g).every((h) => h.kind !== 'move')).toBe(true);

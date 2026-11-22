@@ -346,27 +346,6 @@ export function Game(p: Props) {
   const dews = data.settings.style !== 'muste';
   const t = performance.now();
   const hintSrc = new Set(hint?.src ?? []);
-  const hintArrow = (() => {
-    if (!hint || hint.stock || !hint.src.length || hint.to === null) return null;
-    const a = pos.get(hint.src[0]);
-    if (!a) return null;
-    const ch = L.w * 1.42;
-    const x1 = a.x + L.w / 2;
-    const y1 = a.y + L.w * 0.3;
-    let x2: number;
-    let y2: number;
-    if (hint.dst !== null) {
-      const b = pos.get(hint.dst)!;
-      x2 = b.x + L.w / 2;
-      y2 = b.y + ch * 0.55;
-    } else {
-      x2 = L.colsX + hint.to * (L.w + L.gap) + L.w / 2;
-      y2 = L.colsY + ch * 0.5;
-    }
-    const lift = Math.max(40, Math.abs(x2 - x1) * 0.35);
-    const cy = Math.min(y1, y2) - lift;
-    return { d: `M${x1},${y1} Q${(x1 + x2) / 2},${cy} ${x2},${y2}`, x1, y1, x2, y2 };
-  })();
   const stockGroups = Math.ceil(g.stock.length / 10);
 
   return (
@@ -464,19 +443,6 @@ export function Game(p: Props) {
           </div>
         );
       })}
-
-      {hintArrow && (
-        <svg key={'ha' + hint!.n} class="hintarrow" viewBox={`0 0 ${vp.w} ${vp.h}`} aria-hidden="true">
-          <defs>
-            <marker id="hintHead" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse">
-              <path d="M0,0 L10,5 L0,10 z" fill="var(--s2)" />
-            </marker>
-          </defs>
-          <path class="halo" d={hintArrow.d} pathLength={1} />
-          <path class="line" d={hintArrow.d} pathLength={1} marker-end="url(#hintHead)" />
-          <circle class="dot" cx={hintArrow.x1} cy={hintArrow.y1} r={6} />
-        </svg>
-      )}
 
       {showLoss && g.status === 'playing' && (
         <LoseOverlay
