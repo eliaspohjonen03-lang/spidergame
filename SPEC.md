@@ -70,7 +70,8 @@ Pakassa on aina 8 jonoa, ja ne jaetaan sarjoille näin:
   pidemmät pinot), ja lopuksi jakopakan, jos jakaminen on mahdollista. Vihje ei arvioi siirtojen
   hyvyyttä. Pois jätetään siirrot, jotka katkaisevat saman maan jonon (myös tyhjään sarakkeeseen),
   sekä siirto samanarvoisen kortin päältä toisen päälle, paitsi jos kortti siirtyy eri maan päältä
-  oman maansa päälle. Siirrot tyhjään sarakkeeseen ovat mukana.
+  oman maansa päälle. Siirrot tyhjään sarakkeeseen ovat mukana, mutta ne näytetään
+  vasta muiden siirtojen jälkeen.
 - **Siirrot loppuivat:** kun pakka on tyhjä eikä yhtään laillista siirtoa ole, peli näyttää
   ilmoituksen. Vaihtoehdot ovat Kumoa, Pelaa sama jako uudelleen ja Uusi peli.
 - **Uusi peli kesken pelin:** peli kysyy vahvistuksen. Keskeytetty peli kirjataan

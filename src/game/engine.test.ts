@@ -195,6 +195,14 @@ describe('vihjeet ja napautus', () => {
     expect(h.some((x) => x.kind === 'move' && x.move.from === 0 && x.move.index === 1 && x.move.to === 1)).toBe(true);
   });
 
+  it('vihje näyttää siirrot tyhjään sarakkeeseen viimeisinä', () => {
+    const g = state([[c(9, 0), c(8, 1)], [], [c(5, 2)], [c(6, 3)]]);
+    const moves = hints(g).flatMap((h) => (h.kind === 'move' ? [h.move] : []));
+    const firstEmpty = moves.findIndex((m) => m.to === 1);
+    expect(firstEmpty).toBeGreaterThan(0);
+    expect(moves.slice(firstEmpty).every((m) => m.to === 1)).toBe(true);
+  });
+
   it('vihje ohittaa siirron samanarvoisen kortin päältä toiselle', () => {
     const g = state([[c(9, 0), c(8, 1)], [c(9, 2)], [c(9, 1)]]);
     const moves = hints(g).flatMap((h) => (h.kind === 'move' ? [h.move] : []));
