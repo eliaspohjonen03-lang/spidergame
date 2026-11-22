@@ -408,7 +408,7 @@ export function Game(p: Props) {
       )}
       <div
         class="stocklbl"
-        style={{ transform: `translate(${L.stock.x}px, ${L.stock.y + L.stock.w * 1.42 + 4}px)`, color: hint?.stock ? 'var(--s2)' : undefined, fontWeight: hint?.stock ? 800 : undefined }}
+        style={{ transform: `translate(${L.stock.x}px, ${L.stock.y + L.stock.w * 1.42 + 4}px)`, color: hint?.stock ? 'var(--s2)' : undefined, fontWeight: hint?.stock ? 700 : undefined }}
       >
         {stockGroups ? `${stockGroups} ${stockGroups === 1 ? 'jako' : 'jakoa'}` : 'Pakka tyhjä'}
       </div>
@@ -420,7 +420,7 @@ export function Game(p: Props) {
         const flipAt = flips.current.get(c.id);
         const flipping = flipAt !== undefined && t - flipAt < 400;
         if (flipAt !== undefined && !flipping) flips.current.delete(c.id);
-        const cls = ['card', ps.flat && !isLifted ? 'flat' : '', flipping ? 'flip' : '', shake === c.id ? 'shake' : '', hintSrc.has(c.id) || (hint?.stock && g.stock.includes(c)) ? 'hint-src' : '', hint && hint.dst === c.id ? 'hint-dst' : '']
+        const cls = ['card', ps.flat && !isLifted ? 'flat' : '', flipping ? 'flip' : '', shake === c.id ? 'shake' : '', hintSrc.has(c.id) ? 'hint-src' : '', hint && hint.dst === c.id ? 'hint-dst' : '']
           .filter(Boolean)
           .join(' ');
         return (
@@ -443,6 +443,19 @@ export function Game(p: Props) {
           </div>
         );
       })}
+
+      {hint?.stock && stockGroups > 0 && (
+        <div
+          key={'sh' + hint.n}
+          class="stockhint"
+          style={{
+            '--w': L.stock.w + 'px',
+            width: L.stock.w + (stockGroups - 1) * 5 + 'px',
+            height: L.stock.w * 1.42 + 'px',
+            transform: `translate(${L.stock.x}px, ${L.stock.y}px)`,
+          }}
+        />
+      )}
 
       {showLoss && g.status === 'playing' && (
         <LoseOverlay

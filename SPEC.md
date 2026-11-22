@@ -63,7 +63,7 @@ Pakassa on aina 8 jonoa, ja ne jaetaan sarjoille näin:
 ### 2.3 Pelin aikana
 
 - **Vihje:** näyttää yhden mahdollisen siirron. Siirrettävät kortit pomppaavat ja hehkuvat,
-  ja kohde hehkuu. Jokainen painallus näyttää seuraavan siirron
+  ja kohde hehkuu. Jakopakan vihjeessä pakan ympärille tulee kehys. Jokainen painallus näyttää seuraavan siirron
   laudan järjestyksessä (sarakkeet vasemmalta oikealle, ensin päällimmäinen kortti, sitten
   pidemmät pinot), ja lopuksi jakopakan, jos jakaminen on mahdollista. Vihje ei arvioi siirtojen
   hyvyyttä. Pois jätetään siirrot, jotka katkaisevat saman maan jonon (myös tyhjään sarakkeeseen),

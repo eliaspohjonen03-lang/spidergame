@@ -104,7 +104,9 @@ h1, h2, h3 { font-family: var(--fdisp); font-weight: 600; line-height: 1.15; mar
 .slot.hint-dst { border: 3px dashed var(--s2); background: color-mix(in srgb, var(--s2) 18%, transparent); animation: hintglow .55s ease-in-out 5 alternate; }
 @keyframes hintbounce { 0%, 100% { transform: translateY(0); } 40% { transform: translateY(calc(var(--w) * -.32)); } }
 @keyframes hintglow { from { box-shadow: 0 0 0 0 transparent; } to { box-shadow: 0 0 0 5px color-mix(in srgb, var(--s2) 45%, transparent), 0 0 24px 6px color-mix(in srgb, var(--s2) 70%, transparent); } }
-@media (prefers-reduced-motion: reduce) { .card.hint-src .inner, .card.hint-dst .inner, .slot.hint-dst { animation: none; } }
+.stockhint { position: absolute; left: 0; top: 0; z-index: 90; pointer-events: none; border-radius: calc(var(--w) * var(--radk)); outline: 2.5px solid var(--s2); outline-offset: 2px; animation: stockpulse 1.1s ease-in-out 3 both; }
+@keyframes stockpulse { 0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--s2) 0%, transparent); } 50% { box-shadow: 0 0 0 7px color-mix(in srgb, var(--s2) 22%, transparent); } }
+@media (prefers-reduced-motion: reduce) { .card.hint-src .inner, .card.hint-dst .inner, .slot.hint-dst, .stockhint { animation: none; } }
 .face { --face: var(--card); background: var(--face); border: 1px solid var(--edge); }
 .noborder .face { border-color: transparent; }
 :root[data-cmode="kehys"] .face { border: max(1.5px, calc(var(--w) * .055)) solid var(--c); }
