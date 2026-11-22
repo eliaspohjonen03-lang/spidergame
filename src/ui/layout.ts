@@ -6,6 +6,8 @@ export interface Pos {
   y: number;
   s: number; // skaalaus
   flat?: boolean; // ei varjoa (pinon alemmat kortit)
+  /** Numeron koko suhteessa normaaliin: pienenee, kun pino tiivistyy, jotta numero mahtuu näkyviin. */
+  nk?: number;
   z: number;
 }
 
@@ -97,7 +99,8 @@ export function cardPositions(g: GameState, L: Layout): Map<number, Pos> {
     const offs = columnOffsets(L, downs, col.length);
     let y = L.colsY;
     col.forEach((card, i) => {
-      pos.set(card.id, { x: L.colsX + c * (L.w + L.gap), y, s: 1, z: 100 + i });
+      const nk = card.up && i < offs.length ? Math.max(0.4, Math.min(1, offs[i] / (UP_OFF * L.w))) : 1;
+      pos.set(card.id, { x: L.colsX + c * (L.w + L.gap), y, s: 1, z: 100 + i, nk });
       if (i < offs.length) y += offs[i];
     });
   });

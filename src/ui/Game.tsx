@@ -433,6 +433,7 @@ export function Game(p: Props) {
             class={cls}
             style={{
               '--c': `var(--s${c.suit})`,
+              '--numk': ps.nk ?? 1,
               transform: `translate3d(${ps.x}px, ${ps.y}px, 0) scale(${ps.s})`,
               zIndex: ps.z + (isLifted ? 1000 : 0),
               transitionDelay: dealIdx >= 0 ? `${dealIdx * 45}ms` : undefined,

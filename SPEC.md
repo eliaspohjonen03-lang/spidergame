@@ -59,6 +59,8 @@ Pakassa on aina 8 jonoa, ja ne jaetaan sarjoille näin:
 - Ajastin käy vain, kun peli on näkyvissä. Se pysähtyy, kun sovellus menee taustalle
   tai näyttö sammuu.
 - Pisteet, aika ja siirtojen määrä näkyvät pelin aikana yläpalkissa.
+- **Tiivistyvät pinot:** kun pino ei mahdu ruudulle normaalein välein, avointen korttien numerot
+  pienenevät samassa suhteessa, jotta numero näkyy kokonaan päällä olevan kortin alta.
 
 ### 2.3 Pelin aikana
 
