@@ -107,7 +107,7 @@ export function featherMask(mask: HTMLCanvasElement, radius: number): HTMLCanvas
 }
 
 export function featherRadius(feather: number, maskW: number, maskH: number): number {
-  return feather * 0.025 * Math.max(maskW, maskH);
+  return feather * 0.01 * Math.max(maskW, maskH);
 }
 
 /** Yhdistää kuvan ja (pehmennetyn) maskin läpinäkyväksi kuvaksi. */
